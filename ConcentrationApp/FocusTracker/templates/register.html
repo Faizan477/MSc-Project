@@ -1,0 +1,72 @@
+<html>
+    <head>
+        <style>
+            #navbar{display:flex;
+                 flex-direction: row;
+                 align-content: center;
+                }
+            #main{
+                display:grid;
+                grid-template-columns: auto auto;
+            }
+            #nav1
+            {
+                justify-self:left;
+            }
+            #nav2
+            {
+                justify-self:center;
+            }
+            #nav3
+            {
+                justify-self:right;
+            }
+            #registerForm
+            {
+                display:flex;
+                flex-direction:column;
+                width:20vw;
+                height:20vh;
+                transform:scale(1.5)
+            }
+            #registerInfo
+            {
+                font-size:2vw;
+                margin: 2rem;
+            }
+            body
+            {
+                color:white;
+                width:100vw;
+                height:100vh;
+                background-color:#0d1b2a
+            }
+        </style>
+    </head>
+    <body>
+        <div id="header">
+            <nav id="navbar">
+                <h1 id="nav1">Focus Tracker</h1>
+                <a id="nav2" href="/">Home</a>
+                <a id="nav3" href="/login_user">Sign in</a>
+            </nav>
+        </div>
+        <div id="main">
+            <div id="registerInfo">
+                <h1>Register</h1>
+                <p>Already have an account?</p>
+                <button><a href="/login_user">Sign in</a></button>
+            </div>
+            <form id="registerForm" method="POST",action="">
+                {% csrf_token %}
+                {{registerForm.username.label}}
+                {{registerForm.username}}
+                {{registerForm.password1.label}}
+                {{registerForm.password1}}
+                {{registerForm.password2.label}}
+                {{registerForm.password2}}
+            <button type="submit">Register!</button>
+        </form>
+        </div>
+    </body>
+</html>

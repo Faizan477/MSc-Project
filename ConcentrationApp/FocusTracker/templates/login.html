@@ -1,0 +1,57 @@
+<html>
+    <head>
+        <style>
+            #navbar{display:flex;
+                 flex-direction: row;
+                 align-content: center;
+                }
+            #main{
+                display:flex;
+                flex-direction: row;
+                justify-content: center;
+            }
+            #nav1
+            {
+                justify-self:left;
+            }
+            #nav2
+            {
+                justify-self:center;
+            }
+            #nav3
+            {
+                justify-self:right;
+            }
+            #loginForm
+            {
+                display:flex;
+                flex-direction:column;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="header">
+            <nav id="navbar">
+                <h1 id="nav1">Focus Tracker</h1>
+                <a id="nav2" href="/">Home</a>
+                <a id="nav3" href="/register">Register</a>
+            </nav>
+        </div>
+        <div id="main">
+            <div id="loginInfo">
+                <h1>Sign in</h1>
+                <p>Don't have an account yet?</p>
+                <button><a href="/register">Register</a></button>
+            </div>
+            <form id="loginForm" method="POST",action="">
+                {% csrf_token %}
+                {{loginForm.username.label}}
+                {{loginForm.username}}
+                {{loginForm.password.label}}
+                {{loginForm.password}}
+                {{msg}}
+            <button type="submit">Let me in!</button>
+        </form>
+        </div>
+    </body>
+</html>
