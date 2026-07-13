@@ -68,7 +68,7 @@ export default
                 //returns all subtasks for that specific date, regardless of task 
                 this.listOfSubtasks = await subtaskResponse.json()
             },
-            async addSubtask(task,event) {
+            async addSubtask(task, event) {
                 const response = await fetch("http://localhost:8000/subtask_list/",
                     {
                         method: 'POST',
@@ -84,7 +84,7 @@ export default
                 else {
                     this.fetchTasks()
                 }
-                task.subtaskName=''
+                task.subtaskName = ''
             },
             async deleteSubtask(id) {
                 const response = await fetch("http://localhost:8000/subtasks/" + id + "/",
@@ -111,6 +111,38 @@ export default
                     }
                 }
                 return filteredList
+            },
+            async completeTask(id) {
+                const response = await fetch("http://localhost:8000/task_completed/" + id + "/",
+                    {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: { 'X-CSRFToken': await this.getCsrfCookie() }
+                    })
+                let taskCompleted = await response.json()
+                console.log(taskCompleted)
+                if ((taskCompleted.completed != true) && (taskCompleted.completed != false)) {
+                    alert("An error occured. Please try again later.")
+                }
+                else {
+                    this.fetchTasks()
+                }
+            },
+            async completeSubtask(id) {
+                const response = await fetch("http://localhost:8000/subtask_completed/" + id + "/",
+                    {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: { 'X-CSRFToken': await this.getCsrfCookie() }
+                    })
+                let subtaskCompleted = await response.json()
+                console.log(subtaskCompleted)
+                if ((subtaskCompleted.completed != true) && (subtaskCompleted.completed != false)) {
+                    alert("An error occured. Please try again later.")
+                }
+                else {
+                    this.fetchTasks()
+                }
             }
         }
     }
@@ -120,7 +152,7 @@ export default
         <div class="progress-bar" role="progressbar" style="width:50%" aria-valuenow="0" aria-valuemin="0"
             aria-valuemax="100"></div>
     </div>
-    <p>% complete</p>
+    <br>
     <button type="button" class="btn btn-secondary w-100 d-flex justify-content-evenly" data-bs-toggle="modal"
         data-bs-target="#addTaskModal">
         <i class="bi bi-plus-circle-fill" style="font-size: 1.75em;"></i>
@@ -137,14 +169,15 @@ export default
                     <form @submit.prevent="addTask">
                         <label for="taskName">Task Name</label>
                         <input type="text" id="taskName" v-model="taskName" required>
-                        <button type="submit" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal">Done</button>
+                        <button type="submit" class="btn btn-success" data-bs-toggle="modal"
+                            data-bs-target="#addTaskModal">Done</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-    <div style="overflow:auto;max-height:50vh;">
+    <div style="overflow:auto;max-height:55vh;">
         <div v-for="task in listOfTasks" v-bind:key="task.id">
             <div class="accordion">
                 <div class="accordion-item bg-secondary-subtle" v-bind:id="task.id">
@@ -153,6 +186,10 @@ export default
                         <div id="buttonGroup" class="d-flex justify-content-end">
                             <button type="button" class="bi bi-pencil me-2"></button>
                             <button type="button" class="bi bi-trash" @click="deleteTask(task.id)"></button>
+                            <button v-if="task.completed" type="button" class="bi bi-check-circle-fill ms-2 me-2"
+                                @click="completeTask(task.id)"></button>
+                            <button v-else type="button" class="bi bi-circle-fill ms-2 me-2"
+                                @click="completeTask(task.id)"></button>
                         </div>
                         <button class="accordion-button" type="button" data-bs-toggle="collapse"
                             v-bind:data-bs-target="'#collapsableBody' + task.id"></button>
@@ -161,7 +198,7 @@ export default
                         aria-labelledby="header">
                         <div class="accordion-body" id="'subtasks'+task.id">
                             <button type="button" class="btn btn-secondary w-100 d-flex justify-content-evenly"
-                                data-bs-toggle="modal" v-bind:data-bs-target="'#addSubtaskModal'+task.id">
+                                data-bs-toggle="modal" v-bind:data-bs-target="'#addSubtaskModal' + task.id">
                                 <i class="bi bi-plus-circle-fill" style="font-size: 1.75em;"></i>
                                 <h6 class="align-self-center">Add subtask</h6>
                             </button>
@@ -169,7 +206,13 @@ export default
                                 <h6>{{ subtask.subtask_name }}
                                     <div id="buttonGroup" class="d-flex justify-content-end">
                                         <button type="button" class="bi bi-pencil me-2"></button>
-                                        <button type="button" class="bi bi-trash" @click="deleteSubtask(subtask.id)"></button>
+                                        <button type="button" class="bi bi-trash"
+                                            @click="deleteSubtask(subtask.id)"></button>
+                                        <button v-if="subtask.completed" type="button"
+                                            class="bi bi-check-circle-fill ms-2 me-2"
+                                            @click="completeSubtask(subtask.id)"></button>
+                                        <button v-else type="button" class="bi bi-circle-fill ms-2 me-2"
+                                            @click="completeSubtask(subtask.id)"></button>
                                     </div>
                                 </h6>
                             </div>
@@ -184,10 +227,11 @@ export default
                                                 aria-label="close"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <form @submit.prevent="addSubtask(task,$event)">
+                                            <form @submit.prevent="addSubtask(task, $event)">
                                                 <label for="subtaskName">Subtask Name</label>
                                                 <input type="text" id="subtaskName" v-model="task.subtaskName" required>
-                                                <button type="submit" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSubtaskModal">Done</button>
+                                                <button type="submit" class="btn btn-success" data-bs-toggle="modal"
+                                                    data-bs-target="#addSubtaskModal">Done</button>
                                                 <button type="button" class="btn btn-secondary"
                                                     data-bs-dismiss="modal">Close</button>
                                             </form>

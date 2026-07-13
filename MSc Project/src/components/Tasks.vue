@@ -91,9 +91,9 @@
         <h4 class="align-self-start">Tasks</h4>
     </div>
     <div class="d-flex justify-content-center">
-        <button @click="handleLeftButton" class="bi bi-arrow-left-square-fill me-3" style="font-size:1.75em"></button>
+        <button @click="handleLeftButton" class="bi bi-arrow-left-square-fill me-3" style="font-size:1.75em; border:none; padding:0; margin:0; background-color: transparent; "></button>
         <h6>{{ dateString }}</h6>
-        <button @click="handleRightButton" class="bi bi-arrow-right-square-fill ms-3" style="font-size: 1.75em;"></button>
+        <button @click="handleRightButton" class="bi bi-arrow-right-square-fill ms-3" style="font-size: 1.75em; border:none; padding:0; margin:0; background-color: transparent;"></button>
     </div>
     <TaskDate class="h-100" v-bind:selected-date="date"/>
 </template>

@@ -28,6 +28,38 @@ def task(request,id):
             
     else:
         return JsonResponse({'error':True})
+    
+@login_required
+def task_completed(request,id):
+    for task in models.Task.objects.filter(user=request.user):
+        if(task.id==id):
+            if(task.completed==False):
+                task.completed=True
+                task.save()
+                for subtask in models.Subtask.objects.filter(task__user=request.user):
+                    if(subtask.task.id==id):
+                        subtask.completed=True
+                        subtask.save()
+                return JsonResponse({'completed':True})
+            elif(task.completed==True):
+                task.completed=False
+                task.save()
+                return JsonResponse({'completed':False})
+    return JsonResponse({'error':True})
+
+@login_required
+def subtask_completed(request,id):
+    for subtask in models.Subtask.objects.filter(task__user=request.user):
+        if(subtask.id==id):
+            if(subtask.completed==False):
+                subtask.completed=True
+                subtask.save()
+                return JsonResponse({'completed':True})
+            elif(subtask.completed==True):
+                subtask.completed=False
+                subtask.save()
+                return JsonResponse({'completed':False})
+    return JsonResponse({'error':True})
 
 @login_required
 def task_list(request):

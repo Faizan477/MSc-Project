@@ -21,6 +21,11 @@ class Subtask(models.Model):
     
     def to_dict(self):
         return {'id':self.id,'task':self.task.to_dict(),'subtask_name':self.subtask_name,'completed':self.completed}
+
+class Quote(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    text=models.TextField()
+    author=models.CharField(max_length=64)
     
-
-
+    def to_dict(self):
+        return {'id':self.id,'user':self.user.id,'text':self.text,'author':self.author}

@@ -4,6 +4,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 import './assets/main.css'
 
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import {createRouter, createWebHistory} from 'vue-router'
 import App from './App.vue'
 import Dashboard from './views/Dashboard.vue'
@@ -30,4 +31,4 @@ router.beforeEach(async(to,from)=>
 
         }
     })
-createApp(App).use(router).mount('#app')
+createApp(App).use(router).use(createPinia()).mount('#app')
