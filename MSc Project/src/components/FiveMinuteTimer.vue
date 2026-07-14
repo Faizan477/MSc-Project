@@ -12,7 +12,8 @@ export default
                 running:false,
                 startTime: 0,
                 endTime: 0,
-                prompt: false
+                prompt: false,
+                standardTimer:false,
             }
         },
         computed:
@@ -74,16 +75,20 @@ export default
             },
             removePrompt() {
                 this.prompt = false
+            },
+            switchToStandardTimer()
+            {
+                this.$emit('switchToStandardTimer')
             }
         }
     }
 </script>
 <template>
     <div v-if="prompt" class="d-flex flex-column align-items-center">
-        <h6>In the flow? Let's start a session!</h6>
-        <button type="button" class="btn btn-secondary" @click="handleStandardTimerToggleButton">Yes! Bring it
+        <h6 class="mt-4">In the flow? Let's start a session!</h6>
+        <button type="button" class="btn btn-secondary mt-4" @click="switchToStandardTimer()">Yes! Bring it
             on.</button>
-        <button type="button" class="btn btn-secondary" @click="removePrompt">I need another 5 minutes to get into the
+        <button type="button" class="btn btn-secondary mt-3" @click="removePrompt">I need another 5 minutes to get into the
             flow.</button>
     </div>
     <div v-else class="d-flex flex-column align-items-center">

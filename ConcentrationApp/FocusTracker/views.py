@@ -44,6 +44,10 @@ def task_completed(request,id):
             elif(task.completed==True):
                 task.completed=False
                 task.save()
+                for subtask in models.Subtask.objects.filter(task__user=request.user):
+                    if(subtask.task.id==id):
+                        subtask.completed=False
+                        subtask.save()
                 return JsonResponse({'completed':False})
     return JsonResponse({'error':True})
 
@@ -54,10 +58,22 @@ def subtask_completed(request,id):
             if(subtask.completed==False):
                 subtask.completed=True
                 subtask.save()
+                taskObject=subtask.task
+                for subtask in models.Subtask.objects.filter(task__user=request.user,task__id=taskObject.id):
+                    if(subtask.completed==False):
+                        return JsonResponse({'completed':True})
+                taskObject.completed=True
+                taskObject.save()
                 return JsonResponse({'completed':True})
             elif(subtask.completed==True):
                 subtask.completed=False
                 subtask.save()
+                taskObject=subtask.task
+                for subtask in models.Subtask.objects.filter(task__user=request.user,task__id=taskObject.id):
+                    if(subtask.completed==True):
+                        return JsonResponse({'completed':False})
+                taskObject.completed=False
+                taskObject.save()
                 return JsonResponse({'completed':False})
     return JsonResponse({'error':True})
 
@@ -69,9 +85,6 @@ def task_list(request):
         return JsonResponse({'created':'true'})
     date=request.GET.get('date')
     return JsonResponse([task.to_dict() for task in models.Task.objects.filter(user=request.user,scheduled_date=date)],safe=False)
-
-def task_check_completed(request):
-    pass
 
 @login_required
 def subtask(request,id):    
@@ -103,11 +116,10 @@ def subtask_list(request):
     date=request.GET.get('date')
     return JsonResponse([subtask.to_dict() for subtask in models.Subtask.objects.filter(task__user=request.user,task__scheduled_date=date)],safe=False)
 
-def subtask_check_completed(request):
-    pass
-
 @login_required
 def quote(request,id):
+    if(request.method=='GET'):
+        return JsonResponse(quote.to_dict())
     if(request.method=='DELETE'):
         for quote in models.Quote.objects.filter(user=request.user):
             if(quote.id==id):

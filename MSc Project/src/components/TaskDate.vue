@@ -6,10 +6,13 @@ export default
                 taskName: '',
                 listOfTasks: [],
                 listOfSubtasks: [],
-                progress:0
+                progress: 0
             }
         },
-        updated()
+        updated() {
+            this.tasksProgress()
+        },
+        mounted()
         {
             this.tasksProgress()
         },
@@ -152,33 +155,36 @@ export default
                     this.fetchTasks()
                 }
             },
-            tasksProgress()
-            {
-                let numCompleted=0
-                for(let task of this.listOfTasks)
-                {
-                    if(task.completed==true)
-                    {
+            tasksProgress() {
+                let numCompleted = 0
+                for (let task of this.listOfTasks) {
+                    if (task.completed == true) {
                         numCompleted++
                     }
                 }
-                console.log('returning now the value'+(numCompleted/this.listOfTasks.length)*100)
-                this.progress=(numCompleted/this.listOfTasks.length)*100
+                if(this.listOfTasks.length==0)
+                {
+                    this.progress=0
+                }
+                else
+                {
+                    this.progress = (numCompleted / this.listOfTasks.length) * 100
+                }  
             }
         }
     }
 </script>
 <template>
     <div class="progress w-100">
-        <div class="progress-bar" role="progressbar" :style="{width:progress+'%'}" aria-valuenow="0" aria-valuemin="0"
-            aria-valuemax="100"></div>
+        <div class="progress-bar" role="progressbar" :style="{ width: progress + '%' }" aria-valuenow="0"
+            aria-valuemin="0" aria-valuemax="100"></div>
     </div>
     <div class="d-flex justify-content-center">
-        <button type="button" id="addTask" class="btn btn-secondary w-50 d-flex justify-content-evenly" data-bs-toggle="modal"
-        data-bs-target="#addTaskModal">
-        <i class="bi bi-plus-circle-fill" style="font-size: 1.75em;"></i>
-        <h6 class="align-self-center">Add new task</h6>
-    </button>
+        <button type="button" id="addTask" class="btn btn-secondary w-50 d-flex justify-content-evenly"
+            data-bs-toggle="modal" data-bs-target="#addTaskModal">
+            <i class="bi bi-plus-circle-fill" style="font-size: 1.75em;"></i>
+            <h6 class="align-self-center">Add new task</h6>
+        </button>
     </div>
     <div class="modal fade" id="addTaskModal" role="dialog" aria-labelledby="addTaskModalLabel">
         <div class="modal-dialog" role="document">
@@ -189,11 +195,17 @@ export default
                 </div>
                 <div class="modal-body">
                     <form @submit.prevent="addTask">
-                        <label for="taskName">Task Name</label>
-                        <input type="text" id="taskName" v-model="taskName" required>
-                        <button type="submit" class="btn btn-success" data-bs-toggle="modal"
-                            data-bs-target="#addTaskModal">Done</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <div class="d-flex flex-column align-items-center">
+                            <label for="taskName">Task Name</label>
+                            <input type="text" id="taskName" v-model="taskName" required>
+                            <div class="d-flex justify-content-center mt-3">
+                                <button v-if="taskName==''" type="button" class="btn btn-success" disabled>Done</button>
+                                <button v-else type="submit" class="btn btn-success" data-bs-toggle="modal"
+                                    data-bs-target="#addTaskModal">Done</button>
+                                <button type="button" class="btn btn-secondary ms-3"
+                                    data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -218,9 +230,10 @@ export default
                     </h5>
                     <div v-bind:id="'collapsableBody' + task.id" class="accordion-collapse collapse"
                         aria-labelledby="header">
-                        <div class="accordion-body d-flex justify-content-center" id="'subtasks'+task.id">
-                            <button type="button" id="addSubtask" class="btn btn-secondary w-50 d-flex justify-content-evenly"
-                                data-bs-toggle="modal" v-bind:data-bs-target="'#addSubtaskModal' + task.id">
+                        <div class="accordion-body d-flex flex-column" id="'subtasks'+task.id">
+                            <button type="button" id="addSubtask"
+                                class="btn btn-secondary w-50 d-flex justify-content-evenly align-self-center" data-bs-toggle="modal"
+                                v-bind:data-bs-target="'#addSubtaskModal' + task.id">
                                 <i class="bi bi-plus-circle-fill" style="font-size: 1.75em;"></i>
                                 <h6 class="align-self-center">Add subtask</h6>
                             </button>

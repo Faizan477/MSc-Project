@@ -22,7 +22,7 @@ export default
                 if (this.standardTimer == false) {
                     this.standardTimer = true
                 }
-            }
+            },
         }
     }
 </script>
@@ -45,7 +45,7 @@ export default
             <StudyTimer></StudyTimer>
         </div>
         <div v-else>
-            <FiveMinuteTimer></FiveMinuteTimer>
+            <FiveMinuteTimer @switchToStandardTimer="handleStandardTimerToggleButton()"></FiveMinuteTimer>
         </div>
     </div>
 </template>
