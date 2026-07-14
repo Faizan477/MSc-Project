@@ -3,3 +3,12 @@
     background-color:#f0ebd8 !important;
     color:#0d1321 !important;
 }
+.bi
+{
+    border:none; padding:0; margin:0; background-color: transparent;
+}
+#addTask,#addSubtask,#addQuote
+{
+    padding:0;
+    margin:0.75em;
+}

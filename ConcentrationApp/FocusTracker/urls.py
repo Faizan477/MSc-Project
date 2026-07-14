@@ -9,8 +9,12 @@ urlpatterns=[
     path('logout_user/',views.logout_user,name='logout_user'),
     path('tasks/<int:id>/',views.task,name='task'),
     path('task_completed/<int:id>/',views.task_completed,name='task_completed'),
+    path('task_check_completed/',views.task_check_completed,name='task_check_completed'),
     path('task_list/',views.task_list,name='task_list'),
     path('subtasks/<int:id>/',views.subtask,name='subtask'),
     path('subtask_list/',views.subtask_list,name='subtask_list'),
     path('subtask_completed/<int:id>/',views.subtask_completed,name='subtask_completed'),
+    path('subtask_check_completed/',views.subtask_check_completed,name='subtask_check_completed'),
+    path('quote/<int:id>/',views.quote,name='quote'),
+    path('quote_list/',views.quote_list,name='quote_list')
 ]

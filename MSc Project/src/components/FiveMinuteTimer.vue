@@ -95,7 +95,7 @@ export default
         <h6>Trouble starting a task?</h6>
         <h6>Work for only 5 minutes!</h6>
         <div class="lead fs-1" style="transform:scale(1.25)">
-            {{ minutes.toString().padStart(2, '0') }}:{{ seconds.toString().padEnd(2, '0') }}
+            {{ minutes.toString().padStart(2, '0') }}:{{ seconds.toString().padStart(2, '0') }}
             {{ text }}
         </div>
         <div class="d-flex justify-content-center">

@@ -5,8 +5,16 @@ export default
             return {
                 taskName: '',
                 listOfTasks: [],
-                listOfSubtasks: []
+                listOfSubtasks: [],
+                progress:0
             }
+        },
+        updated()
+        {
+            this.tasksProgress()
+        },
+        computed:
+        {
         },
         watch:
         {
@@ -143,21 +151,35 @@ export default
                 else {
                     this.fetchTasks()
                 }
+            },
+            tasksProgress()
+            {
+                let numCompleted=0
+                for(let task of this.listOfTasks)
+                {
+                    if(task.completed==true)
+                    {
+                        numCompleted++
+                    }
+                }
+                console.log('returning now the value'+(numCompleted/this.listOfTasks.length)*100)
+                this.progress=(numCompleted/this.listOfTasks.length)*100
             }
         }
     }
 </script>
 <template>
     <div class="progress w-100">
-        <div class="progress-bar" role="progressbar" style="width:50%" aria-valuenow="0" aria-valuemin="0"
+        <div class="progress-bar" role="progressbar" :style="{width:progress+'%'}" aria-valuenow="0" aria-valuemin="0"
             aria-valuemax="100"></div>
     </div>
-    <br>
-    <button type="button" class="btn btn-secondary w-100 d-flex justify-content-evenly" data-bs-toggle="modal"
+    <div class="d-flex justify-content-center">
+        <button type="button" id="addTask" class="btn btn-secondary w-50 d-flex justify-content-evenly" data-bs-toggle="modal"
         data-bs-target="#addTaskModal">
         <i class="bi bi-plus-circle-fill" style="font-size: 1.75em;"></i>
         <h6 class="align-self-center">Add new task</h6>
     </button>
+    </div>
     <div class="modal fade" id="addTaskModal" role="dialog" aria-labelledby="addTaskModalLabel">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -196,8 +218,8 @@ export default
                     </h5>
                     <div v-bind:id="'collapsableBody' + task.id" class="accordion-collapse collapse"
                         aria-labelledby="header">
-                        <div class="accordion-body" id="'subtasks'+task.id">
-                            <button type="button" class="btn btn-secondary w-100 d-flex justify-content-evenly"
+                        <div class="accordion-body d-flex justify-content-center" id="'subtasks'+task.id">
+                            <button type="button" id="addSubtask" class="btn btn-secondary w-50 d-flex justify-content-evenly"
                                 data-bs-toggle="modal" v-bind:data-bs-target="'#addSubtaskModal' + task.id">
                                 <i class="bi bi-plus-circle-fill" style="font-size: 1.75em;"></i>
                                 <h6 class="align-self-center">Add subtask</h6>

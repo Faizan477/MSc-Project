@@ -70,6 +70,9 @@ def task_list(request):
     date=request.GET.get('date')
     return JsonResponse([task.to_dict() for task in models.Task.objects.filter(user=request.user,scheduled_date=date)],safe=False)
 
+def task_check_completed(request):
+    pass
+
 @login_required
 def subtask(request,id):    
     if request.method=='DELETE':
@@ -99,6 +102,38 @@ def subtask_list(request):
         return JsonResponse({'created':True})
     date=request.GET.get('date')
     return JsonResponse([subtask.to_dict() for subtask in models.Subtask.objects.filter(task__user=request.user,task__scheduled_date=date)],safe=False)
+
+def subtask_check_completed(request):
+    pass
+
+@login_required
+def quote(request,id):
+    if(request.method=='DELETE'):
+        for quote in models.Quote.objects.filter(user=request.user):
+            if(quote.id==id):
+                quote.delete()
+                return JsonResponse({'deleted':True})
+        return JsonResponse({'deleted':False})
+    elif(request.method=='PUT'):
+        request_body=json.loads(request.body)
+        for quote in models.Quote.objects.filter(user=request.user):
+            if(quote.id==id):
+                quote.text=request_body['text']
+                quote.author=request_body['author']
+                quote.save()
+                return JsonResponse({'edited':True})
+            return JsonResponse({'edited':False})
+            
+    else:
+        return JsonResponse({'error':True})
+
+@login_required
+def quote_list(request):
+    if(request.method=='POST'):
+        request_body=json.loads(request.body)
+        models.Quote.objects.create(user=request.user,text=request_body['text'],author=request_body['author'])
+        return JsonResponse({'created':'true'})
+    return JsonResponse([quote.to_dict() for quote in models.Quote.objects.filter(user=request.user)],safe=False)
         
 def register(request):
     register_form=forms.RegisterForm()
