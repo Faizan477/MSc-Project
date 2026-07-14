@@ -73,7 +73,7 @@ export default
                 let response = await fetch("http://localhost:8000/quote_list/", { credentials: 'include' })
                 this.listOfQuotes = await response.json()
             },
-            async fetchQuoteInfo(quote)
+            fetchQuoteInfo(quote)
             {
                 this.editedText=quote.text
                 this.editedAuthor=quote.author
@@ -145,8 +145,7 @@ export default
                                                 required>
                                             <label for="quoteAuthor">Quote Author</label>
                                             <input type="text" id="quoteAuthor" class="w-100" v-model="editedAuthor">
-                                            <br>
-                                            <div class="d-flex justify-content-center">
+                                            <div class="d-flex justify-content-center mt-3">
                                                 <button v-if="this.editedText == ''" type="button"
                                                     class="btn btn-success w-30 me-3" disabled>Done</button>
                                                 <button v-else type="submit" class="btn btn-success w-30 me-3"

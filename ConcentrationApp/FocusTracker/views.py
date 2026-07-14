@@ -20,6 +20,7 @@ def task(request,id):
         for task in models.Task.objects.filter(user=request.user):
             if(task.id==id):
                 task.task_name=request_body['taskName']
+                task.description=request_body['taskDescription']
                 task.completed=request_body['completed']
                 task.scheduled_date=request_body['scheduledDate']
                 task.save()
@@ -81,7 +82,7 @@ def subtask_completed(request,id):
 def task_list(request):
     if(request.method=='POST'):
         request_body=json.loads(request.body)
-        models.Task.objects.create(user=request.user,task_name=request_body['taskName'],scheduled_date=request_body['scheduledDate'])
+        models.Task.objects.create(user=request.user,task_name=request_body['taskName'],description=request_body['taskDescription'],scheduled_date=request_body['scheduledDate'])
         return JsonResponse({'created':'true'})
     date=request.GET.get('date')
     return JsonResponse([task.to_dict() for task in models.Task.objects.filter(user=request.user,scheduled_date=date)],safe=False)
@@ -99,6 +100,7 @@ def subtask(request,id):
         for subtask in models.Subtask.objects.filter(task__user=request.user):
             if(subtask.id==id):
                 subtask.subtask_name=request_body['subtaskName']
+                subtask.description=request_body['subtaskDescription']
                 subtask.completed=request_body['completed']
                 subtask.save()
                 return JsonResponse({'edited':True})
@@ -111,7 +113,7 @@ def subtask_list(request):
     if request.method=='POST':
         request_body=json.loads(request.body)
         taskObject=models.Task.objects.get(id=request_body['task'])
-        models.Subtask.objects.create(task=taskObject,subtask_name=request_body['subtaskName'])
+        models.Subtask.objects.create(task=taskObject,subtask_name=request_body['subtaskName'],description=request_body['subtaskDescription'])
         return JsonResponse({'created':True})
     date=request.GET.get('date')
     return JsonResponse([subtask.to_dict() for subtask in models.Subtask.objects.filter(task__user=request.user,task__scheduled_date=date)],safe=False)
