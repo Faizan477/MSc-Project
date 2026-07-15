@@ -8,13 +8,18 @@
         return{
             dateString:'',
             date:'',
+            startDate:'',
+            endDate:'',
             dateArray:[],
             dateStringArray:[]}
     },
     mounted()
     {
+        let millisecondsIn6Days=518400000
         this.dateString=this.convertToDateString(Date.now())
         this.date=this.convertToDate(Date.now())
+        this.startDate=this.convertToDate(Date.now())
+        this.endDate=this.convertToDate(Date.now()+millisecondsIn6Days)
         this.createDateArray()
         this.createDateStringArray()
         console.log(this.dateString)
@@ -95,5 +100,5 @@
         <h6>{{ dateString }}</h6>
         <button @click="handleRightButton" class="bi bi-arrow-right-square-fill ms-3" style="font-size: 1.75em; border:none; padding:0; margin:0; background-color: transparent;"></button>
     </div>
-    <TaskDate class="h-100" v-bind:selected-date="date"/>
+    <TaskDate class="h-100" v-bind:selectedDate="date" v-bind:startDateRange="startDate" v-bind:endDateRange="endDate" />
 </template>

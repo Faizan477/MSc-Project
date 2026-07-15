@@ -25,7 +25,7 @@ def task(request,id):
                 task.scheduled_date=request_body['scheduledDate']
                 task.save()
                 return JsonResponse({'edited':True})
-            return JsonResponse({'edited':False})
+        return JsonResponse({'edited':False})
             
     else:
         return JsonResponse({'error':True})
@@ -104,7 +104,7 @@ def subtask(request,id):
                 subtask.completed=request_body['completed']
                 subtask.save()
                 return JsonResponse({'edited':True})
-            return JsonResponse({'edited':False})
+        return JsonResponse({'edited':False})
     else:
         return JsonResponse({'error':True})
 
@@ -120,8 +120,6 @@ def subtask_list(request):
 
 @login_required
 def quote(request,id):
-    if(request.method=='GET'):
-        return JsonResponse(quote.to_dict())
     if(request.method=='DELETE'):
         for quote in models.Quote.objects.filter(user=request.user):
             if(quote.id==id):
@@ -130,13 +128,15 @@ def quote(request,id):
         return JsonResponse({'deleted':False})
     elif(request.method=='PUT'):
         request_body=json.loads(request.body)
+        print(request_body)
+        print(models.Quote.objects.filter(user=request.user))
         for quote in models.Quote.objects.filter(user=request.user):
             if(quote.id==id):
-                quote.text=request_body['text']
-                quote.author=request_body['author']
+                quote.text=request_body['editedText']
+                quote.author=request_body['editedAuthor']
                 quote.save()
                 return JsonResponse({'edited':True})
-            return JsonResponse({'edited':False})
+        return JsonResponse({'edited':False})
             
     else:
         return JsonResponse({'error':True})

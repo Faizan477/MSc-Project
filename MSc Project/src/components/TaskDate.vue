@@ -30,7 +30,9 @@ export default
         },
         props:
             [
-                'selectedDate'
+                'selectedDate',
+                'startDateRange',
+                'endDateRange'
             ],
         methods:
         {
@@ -213,7 +215,7 @@ export default
             {
                 this.editedName=task.task_name
                 this.editedDescription=task.description
-                this.rescheduleTo=task.scheduledDate
+                this.rescheduleTo=task.scheduled_date
             }
         }
     }
@@ -266,8 +268,8 @@ export default
                         {{ task.task_name }}
                         {{ task.description }}
                         <div id="buttonGroup" class="d-flex justify-content-end">
-                            <button type="button" class="bi bi-pencil me-2" data-bs-toggle="modal" data-bs-target="#editTaskModal" @click="fetchTaskInfo(task)"></button>
-                                        <div class="modal fade" id="editTaskModal" role="dialog"
+                            <button type="button" class="bi bi-pencil me-2" data-bs-toggle="modal" :data-bs-target="'#editTaskModal' + task.id" @click="fetchTaskInfo(task)"></button>
+                                        <div class="modal fade" :id="'editTaskModal' + task.id" role="dialog"
                                             aria-labelledby="editTaskModalLabel">
                                             <div class="modal-dialog" role="document">
                                                 <div class="modal-content">
@@ -285,6 +287,8 @@ export default
                                                             <label for="editedDescription">Description</label>
                                                             <input type="text" id="editedDescription" class="w-100"
                                                                 v-model="editedDescription">
+                                                            <label for="rescheduleTo">Scheduled date</label>
+                                                            <input type="date" id="rescheduleTo" v-model="rescheduleTo" min="startDateRange" max="endDateRange">
                                                             <div class="d-flex justify-content-center mt-3">
                                                                 <button v-if="this.editedName == ''" type="button"
                                                                     class="btn btn-success w-30 me-3"
@@ -292,7 +296,7 @@ export default
                                                                 <button v-else type="submit"
                                                                     class="btn btn-success w-30 me-3"
                                                                     data-bs-toggle="modal"
-                                                                    data-bs-target="#editTaskModal">Done</button>
+                                                                    :data-bs-target="'#editTaskModal' + task.id">Done</button>
                                                                 <br>
                                                                 <button type="button" class="btn btn-secondary w-30"
                                                                     data-bs-dismiss="modal">Close</button>

@@ -51,15 +51,17 @@ export default
                 }
             },
             async editQuote(id) {
+                console.log("The id that i have been given (edit quote) is "+id)
+                console.log("I am going to send the following"+this.editedText+""+this.editedAuthor)
                 const response = await fetch("http://localhost:8000/quote/" + id + "/",
                     {
                         method: 'PUT',
                         credentials: 'include',
                         headers: { 'X-CSRFToken': await this.getCsrfCookie() },
-                        body: JSON.stringify({ 'text': this.editedText, 'author': this.editedAuthor })
+                        body: JSON.stringify({ 'editedText': this.editedText, 'editedAuthor': this.editedAuthor })
                     })
                 let quoteEdited = await response.json()
-                console.log(quoteEdited.edited)
+                console.log("Has it been edited"+quoteEdited.edited)
                 if (quoteEdited.edited != true) {
                     alert("An error occured trying to edit the quote. Please try again later.")
                 }
@@ -129,8 +131,8 @@ export default
                     <p class="mb-0">"{{ quote.text }}"</p>
                     <div class="d-flex justify-content-end">
                         <button type="button" class="bi bi-pencil me-2" data-bs-toggle="modal"
-                            data-bs-target="#editQuoteModal" @click="fetchQuoteInfo(quote)"></button>
-                        <div class="modal fade" id="editQuoteModal" role="dialog" aria-labelledby="editQuoteModalLabel">
+                            :data-bs-target="'#editQuoteModal'+quote.id" @click="fetchQuoteInfo(quote)"></button>
+                        <div class="modal fade" :id="'editQuoteModal'+quote.id" role="dialog" aria-labelledby="editQuoteModalLabel">
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
                                     <div class="modal-header">
@@ -149,7 +151,7 @@ export default
                                                 <button v-if="this.editedText == ''" type="button"
                                                     class="btn btn-success w-30 me-3" disabled>Done</button>
                                                 <button v-else type="submit" class="btn btn-success w-30 me-3"
-                                                    data-bs-toggle="modal" data-bs-target="#editQuoteModal">Done</button>
+                                                    data-bs-toggle="modal" :data-bs-target="'#editQuoteModal' + quote.id">Done</button>
                                                 <br>
                                                 <button type="button" class="btn btn-secondary w-30"
                                                     data-bs-dismiss="modal">Close</button>
