@@ -266,8 +266,10 @@ export default
                 <div class="accordion-item bg-secondary-subtle" v-bind:id="task.id">
                     <h5 class="accordion-header" id="header">
                         {{ task.task_name }}
-                        {{ task.description }}
                         <div id="buttonGroup" class="d-flex justify-content-end">
+                            <div class="me-auto">
+                                {{ task.description }}
+                            </div>
                             <button type="button" class="bi bi-pencil me-2" data-bs-toggle="modal" :data-bs-target="'#editTaskModal' + task.id" @click="fetchTaskInfo(task)"></button>
                                         <div class="modal fade" :id="'editTaskModal' + task.id" role="dialog"
                                             aria-labelledby="editTaskModalLabel">
@@ -288,7 +290,7 @@ export default
                                                             <input type="text" id="editedDescription" class="w-100"
                                                                 v-model="editedDescription">
                                                             <label for="rescheduleTo">Scheduled date</label>
-                                                            <input type="date" id="rescheduleTo" v-model="rescheduleTo" min="startDateRange" max="endDateRange">
+                                                            <input type="date" id="rescheduleTo" v-model="rescheduleTo" :min="startDateRange" :max="endDateRange">
                                                             <div class="d-flex justify-content-center mt-3">
                                                                 <button v-if="this.editedName == ''" type="button"
                                                                     class="btn btn-success w-30 me-3"
@@ -326,8 +328,10 @@ export default
                             </button>
                             <div v-for="subtask in filterSubtasks(task.id)" v-bind:key="subtask.id">
                                 <h6>{{ subtask.subtask_name }}
-                                    {{ subtask.description }}
                                     <div id="buttonGroup" class="d-flex justify-content-end">
+                                        <div class="me-auto">
+                                            {{ subtask.description }}
+                                        </div>
                                         <button type="button" class="bi bi-pencil me-2" data-bs-toggle="modal" data-bs-target="#editTaskModal" @click="fetchTaskInfo(task)"></button>
                                         <div class="modal fade" id="editTaskModal" role="dialog"
                                             aria-labelledby="editTaskModalLabel">

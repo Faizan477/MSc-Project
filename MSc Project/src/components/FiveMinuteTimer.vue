@@ -26,7 +26,7 @@ export default
     </div>
     <div v-else class="d-flex flex-column align-items-center">
         <div class="progress w-100">
-            <div class="progress-bar progress-bar-striped bg-info" role="progressbar"
+            <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar"
                 :style="{ width: fiveMinuteTimerStore.percentageProgress + '%' }" :aria-valuenow="fiveMinuteTimerStore.millisecondsGone" :aria-valuemin="0"
                 :aria-valuemax="300000"></div>
         </div>
@@ -37,7 +37,7 @@ export default
             {{ text }}
         </div>
         <div class="d-flex justify-content-center">
-            <button v-if="fiveMinuteTimerStore.running" class="btn btn-secondary" type="button"
+            <button v-if="fiveMinuteTimerStore.fiveMinuteRunning" class="btn btn-secondary" type="button"
                 @click="fiveMinuteTimerStore.pauseTimer">Pause</button>
             <button v-else class="btn btn-secondary" type="button" @click="fiveMinuteTimerStore.startTimer">Start</button>
             <button class="btn btn-secondary ms-3" type="button" @click="fiveMinuteTimerStore.resetTimer">Reset</button>
