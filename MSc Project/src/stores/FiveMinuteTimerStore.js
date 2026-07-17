@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-
+import { useStudyTimerStore } from './StudyTimerStore.js'
 export const useFiveMinuteTimerStore = defineStore('fiveMinuteTimer',
     {
         state: () => {
@@ -15,18 +15,27 @@ export const useFiveMinuteTimerStore = defineStore('fiveMinuteTimer',
             }
         },
         actions: {
+            otherTimerRunning() {
+                const studyTimerStore = useStudyTimerStore()
+                return studyTimerStore.running
+            },
             startTimer() {
-                if (this.fiveMinutePaused == true) {
-                    this.fiveMinuteRunning = true
-                    this.fiveMinutePaused = false
-                    this.endTime = Date.now() + this.millisecondsLeft
-                    this.timerInterval = setInterval(() => { this.updateTimer() }, 100)
+                if (this.otherTimerRunning()) {
+                    alert("Another timer is currently running. Please reset the existing timer to continue")
                 }
                 else {
-                    this.startTime = Date.now()
-                    this.endTime = this.startTime + 300000
-                    this.fiveMinuteRunning = true
-                    this.timerInterval = setInterval(() => { this.updateTimer() }, 100)
+                    if (this.fiveMinutePaused == true) {
+                        this.fiveMinuteRunning = true
+                        this.fiveMinutePaused = false
+                        this.endTime = Date.now() + this.millisecondsLeft
+                        this.timerInterval = setInterval(() => { this.updateTimer() }, 100)
+                    }
+                    else {
+                        this.startTime = Date.now()
+                        this.endTime = this.startTime + 300000
+                        this.fiveMinuteRunning = true
+                        this.timerInterval = setInterval(() => { this.updateTimer() }, 100)
+                    }
                 }
             },
             updateTimer() {

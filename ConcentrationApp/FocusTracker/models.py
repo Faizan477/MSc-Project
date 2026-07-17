@@ -30,3 +30,11 @@ class Quote(models.Model):
     
     def to_dict(self):
         return {'id':self.id,'user':self.user.id,'text':self.text,'author':self.author}
+    
+class UserSetting(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    session_length=models.IntegerField(default=25)
+    short_break_length=models.IntegerField(default=5)
+    long_break_length=models.IntegerField(default=15)
+    num_sessions=models.IntegerField(default=6)
+    

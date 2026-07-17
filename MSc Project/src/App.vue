@@ -57,7 +57,7 @@
                     </div>
                 </div>
             </nav>
-            <router-view class="vh-100 p-3" style="background-color: #f0ebd8ff;" />
+            <router-view class="vh-100 p-3" style="background-color: #f1f4f9;" />
         </div>
     </body>
 </template>
