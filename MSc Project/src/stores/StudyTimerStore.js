@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { Howl, Howler } from 'howler'
 import { useFiveMinuteTimerStore } from './FiveMinuteTimerStore';
 export const useStudyTimerStore = defineStore('studyTimer',
     {
@@ -15,27 +16,25 @@ export const useStudyTimerStore = defineStore('studyTimer',
                 running: false,
                 startTime: 0,
                 endTime: 0,
-                currentSession:1,
-                sessionsBeforeLongBreak:1,
-                shortBreak:false,
-                longBreak:false,
-                session:true
+                currentSession: 1,
+                currentShortBreak: 1,
+                currentLongBreak: 1,
+                shortBreak: false,
+                longBreak: false,
+                timerAlarmSound: ''
             }
         },
         actions: {
-            otherTimerRunning()
-            {
-                const fiveMinuteStore=useFiveMinuteTimerStore()
-                console.log("The timer is"+fiveMinuteStore.fiveMinuteRunning)
+            otherTimerRunning() {
+                const fiveMinuteStore = useFiveMinuteTimerStore()
+                console.log("The timer is" + fiveMinuteStore.fiveMinuteRunning)
                 return fiveMinuteStore.fiveMinuteRunning
             },
             startPomodoroTimer() {
-                if(this.otherTimerRunning())
-                {
+                if (this.otherTimerRunning()) {
                     alert("Another timer is currently running. Please reset the existing timer to continue")
                 }
-                else
-                {
+                else {
                     this.startTimer()
                 }
             },
@@ -47,35 +46,63 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     this.timerInterval = setInterval(() => { this.updateTimer() }, 100)
                 }
                 else {
-                    this.startTime = Date.now()
-                    this.endTime = this.startTime + (this.minutesSet * 60000)
-                    this.running = true
-                    this.timerInterval = setInterval(() => { this.updateTimer() }, 100)
+                    if (this.longBreak == true) {
+                        this.startTime = Date.now()
+                        this.endTime = this.startTime + (this.longBreakMinutesSet * 60000)
+                        this.running = true
+                        this.timerInterval = setInterval(() => { this.updateTimer() }, 100)
+                    }
+                    else if (this.shortBreak == true) {
+                        this.startTime = Date.now()
+                        this.endTime = this.startTime + (this.shortBreakMinutesSet * 60000)
+                        this.running = true
+                        this.timerInterval = setInterval(() => { this.updateTimer() }, 100)
+                    }
+                    else {
+                        this.startTime = Date.now()
+                        this.endTime = this.startTime + (this.minutesSet * 60000)
+                        this.running = true
+                        this.timerInterval = setInterval(() => { this.updateTimer() }, 100)
+                    }
                 }
             },
             updateTimer() {
                 if (this.endTime - Date.now() <= 0) {
                     this.stopTimer()
-                    if(this.currentSession<this.numSessionsSet)
-                    {
-                        if(this.currentSession%4==0)
-                        {
-                            this.minutes=this.longBreakMinutesSet
-                            this.seconds=0
+                    if (this.shortBreak == true || this.longBreak == true) {
+                        this.minutes = this.minutesSet
+                        this.seconds = 0
+                        if (this.shortBreak == true) {
+                            this.shortBreak = false
+                            this.currentShortBreak++
                         }
-                        else
-                        {
-                            this.minutes=this.shortBreakMinutesSet
-                            this.seconds=0
+                        else {
+                            this.longBreak = false
+                            this.currentLongBreak++
                         }
                     }
-                    else
-                    {
-                        //display congratulations message
-                        this.currentSession=1
+                    else if (this.currentSession < this.numSessionsSet) {
+                        if (this.currentSession % 4 == 0) {
+                            this.longBreak = true
+                            this.minutes = this.longBreakMinutesSet
+                            this.seconds = 0
+                            this.currentSession++
+                        }
+                        else {
+                            this.shortBreak = true
+                            this.minutes = this.shortBreakMinutesSet
+                            this.seconds = 0
+                            this.currentSession++
+                        }
                     }
-                    //now set minutes and seconds 
-                    //something about breaks and iterations 
+                    else {
+                        //display cool congratulations animation 
+                        this.minutes = this.minutesSet
+                        this.seconds = 0
+                        this.currentSession = 1
+                        this.currentLongBreak = 1
+                        this.currentShortBreak = 1
+                    }
                 }
                 else {
                     this.minutes = Math.trunc(((this.endTime - Date.now()) / 60000))
@@ -93,9 +120,28 @@ export const useStudyTimerStore = defineStore('studyTimer',
                 clearInterval(this.timerInterval)
             },
             resetTimer() {
-                this.stopTimer()
-                this.minutes=this.minutesSet
-                this.seconds=0
+                if (this.running || this.paused) {
+                    let reset = confirm("Resetting the timer will reset the whole pomodoro sitting back to session 1 (not just this session!) The time you have worked for so far in the session will be saved. Are you sure?")
+                    if (reset == true) {
+                        this.stopTimer()
+                        this.minutes = this.minutesSet
+                        this.seconds = 0
+                        this.currentSession = 1
+                        this.currentLongBreak = 1
+                        this.currentShortBreak = 1
+                        this.shortBreak = false
+                        this.longBreak = false
+                    }
+                }
+                else {
+                    this.minutes = this.minutesSet
+                    this.seconds = 0
+                    this.currentSession = 1
+                    this.currentLongBreak = 1
+                    this.currentShortBreak = 1
+                    this.shortBreak = false
+                    this.longBreak = false
+                }
             },
         },
         getters:

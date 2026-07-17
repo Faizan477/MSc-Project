@@ -1,6 +1,7 @@
 <script>
 import { useStudyTimerStore } from '../stores/StudyTimerStore.js';
 import { mapStores } from 'pinia'
+import timer1 from '../assets/timerAlarmSounds/timer1.mp3'
 export default
     {
         data() {
@@ -8,7 +9,8 @@ export default
                 minutesSet: 25,
                 shortBreakMinutesSet: 5,
                 longBreakMinutesSet: 15,
-                numSessionsSet: 6
+                numSessionsSet: 6,
+                timerAlarmSound:'timer1.mp3'
             }
         },
         computed:
@@ -22,7 +24,12 @@ export default
                 this.studyTimerStore.shortBreakMinutesSet = this.shortBreakMinutesSet
                 this.studyTimerStore.longBreakMinutesSet = this.longBreakMinutesSet
                 this.studyTimerStore.numSessionsSet = this.numSessionsSet
+                this.studyTimerStore.timerAlarmSound=this.timerAlarmSound
                 this.studyTimerStore.resetTimer()
+            },
+            playTrialSound() {
+                let sound = new Howl({ src: [timer1] })
+                sound.play()
             }
         }
     }
@@ -36,6 +43,9 @@ export default
                 :aria-valuemax="(studyTimerStore.minutesSet) * 60000"></div>
         </div>
         <br>
+        <p v-if="!(studyTimerStore.longBreak || studyTimerStore.shortBreak)">Session {{ studyTimerStore.currentSession }} of {{ studyTimerStore.numSessionsSet }} </p>
+        <p v-else-if="studyTimerStore.longBreak">Long break {{ studyTimerStore.currentLongBreak }} of {{ Math.floor(studyTimerStore.numSessionsSet/4)  }}</p>
+        <p v-else>Short break {{ studyTimerStore.currentShortBreak }} of {{  }}</p>
         <button v-show="!(studyTimerStore.running || studyTimerStore.paused)" class="bi bi-gear"
             style="transform:scale(2.5);" data-bs-toggle="modal" data-bs-target="#timerSettingsModal"></button>
         <div class="modal fade" id="timerSettingsModal" role="dialog" aria-labelledby="timerSettingsModalLabel">
@@ -66,6 +76,21 @@ export default
                             <label for="numSessions">Number of sessions in this sitting</label>
                             <input type="number" id="numSessions" class="w-100" v-model="numSessionsSet" min="1"
                                 max="100" placeholder="Please enter a value between 1 and 100" maxlength="3">
+                            <p>Timer Ping sound (plays when the time is up)</p>
+                            <div class="d-flex justify-content-around">
+                                <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value="" id="1">
+                                <label for="1" class="me-3">[Alarm 1]</label>
+                                <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value="" id="2">
+                                <label for="2" class="me-3">[Alarm 2]</label>
+                                <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value="" id="3">
+                                <label for="3">[Alarm 3]</label>
+                            </div>
+
+                            <div class="d-flex justify-content-evenly">
+                                <button class="bi bi-play-circle-fill me-5" @click="playTrialSound()"></button>
+                                <button class="bi bi-play-circle-fill me-5"></button>
+                                <button class="bi bi-play-circle-fill"></button>
+                            </div>
                             <br>
                             <div class="d-flex justify-content-center">
                                 <button v-if="(minutesSet == '' || shortBreakMinutesSet == '' || longBreakMinutesSet == '' || numSessionsSet == ''

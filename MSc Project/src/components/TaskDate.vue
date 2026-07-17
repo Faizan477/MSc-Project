@@ -345,7 +345,7 @@ export default
                                                     <div class="modal-body">
                                                         <form @submit.prevent="editTask(task)"
                                                             class="d-flex flex-column align-items-center">
-                                                            <label for="editedtaskName">Task Name</label>
+                                                            <label for="editedTaskName">Task Name</label>
                                                             <input type="text" id="editedTaskName" class="w-100"
                                                                 v-model="editedName" required>
                                                             <label for="editedDescription">Description</label>
