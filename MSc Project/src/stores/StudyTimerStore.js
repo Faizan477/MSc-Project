@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia'
 import { Howl, Howler } from 'howler'
-import { useFiveMinuteTimerStore } from './FiveMinuteTimerStore';
+import { useFiveMinuteTimerStore } from './FiveMinuteTimerStore'
+import timer1 from '../assets/timerAlarmSounds/timer1.mp3'
+import timer2 from '../assets/timerAlarmSounds/timer2.mp3'
+import timer3 from '../assets/timerAlarmSounds/timer3.mp3'
 export const useStudyTimerStore = defineStore('studyTimer',
     {
         state: () => {
@@ -21,7 +24,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                 currentLongBreak: 1,
                 shortBreak: false,
                 longBreak: false,
-                timerAlarmSound: ''
+                timerAlarmSound: 'timer1'
             }
         },
         actions: {
@@ -69,6 +72,18 @@ export const useStudyTimerStore = defineStore('studyTimer',
             updateTimer() {
                 if (this.endTime - Date.now() <= 0) {
                     this.stopTimer()
+                    if (this.timerAlarmSound == 'timer1') {
+                        let sound = new Howl({ src: [timer1] })
+                        sound.play()
+                    }
+                    else if (this.timerAlarmSound == 'timer2') {
+                        let sound = new Howl({ src: [timer2] })
+                        sound.play()
+                    }
+                    else if (this.timerAlarmSound == 'timer3') {
+                        let sound = new Howl({ src: [timer3] })
+                        sound.play()
+                    }
                     if (this.shortBreak == true || this.longBreak == true) {
                         this.minutes = this.minutesSet
                         this.seconds = 0

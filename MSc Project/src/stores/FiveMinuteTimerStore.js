@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { useStudyTimerStore } from './StudyTimerStore.js'
+import timer1 from '../assets/timerAlarmSounds/timer1.mp3'
 export const useFiveMinuteTimerStore = defineStore('fiveMinuteTimer',
     {
         state: () => {
@@ -42,6 +43,8 @@ export const useFiveMinuteTimerStore = defineStore('fiveMinuteTimer',
                 if (this.endTime - Date.now() <= 0) {
                     this.stopTimer()
                     this.showPrompt()
+                    let sound = new Howl({ src: [timer1] })
+                    sound.play()
                 }
                 else {
                     this.minutes = Math.trunc(((this.endTime - Date.now()) / 60000))

@@ -2,6 +2,8 @@
 import { useStudyTimerStore } from '../stores/StudyTimerStore.js';
 import { mapStores } from 'pinia'
 import timer1 from '../assets/timerAlarmSounds/timer1.mp3'
+import timer2 from '../assets/timerAlarmSounds/timer2.mp3'
+import timer3 from '../assets/timerAlarmSounds/timer3.mp3'
 export default
     {
         data() {
@@ -10,7 +12,7 @@ export default
                 shortBreakMinutesSet: 5,
                 longBreakMinutesSet: 15,
                 numSessionsSet: 6,
-                timerAlarmSound:'timer1.mp3'
+                timerAlarmSound:'timer1'
             }
         },
         computed:
@@ -27,8 +29,18 @@ export default
                 this.studyTimerStore.timerAlarmSound=this.timerAlarmSound
                 this.studyTimerStore.resetTimer()
             },
-            playTrialSound() {
+            playTrialSound1() {
                 let sound = new Howl({ src: [timer1] })
+                sound.play()
+            },
+            playTrialSound2()
+            {
+                let sound = new Howl({src: [timer2]})
+                sound.play()
+            },
+            playTrialSound3()
+            {
+                let sound = new Howl({src: [timer3]})
                 sound.play()
             }
         }
@@ -78,18 +90,18 @@ export default
                                 max="100" placeholder="Please enter a value between 1 and 100" maxlength="3">
                             <p>Timer Ping sound (plays when the time is up)</p>
                             <div class="d-flex justify-content-around">
-                                <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value="" id="1">
-                                <label for="1" class="me-3">[Alarm 1]</label>
-                                <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value="" id="2">
-                                <label for="2" class="me-3">[Alarm 2]</label>
-                                <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value="" id="3">
-                                <label for="3">[Alarm 3]</label>
+                                <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value='timer1' id="1">
+                                <label for="1" class="me-3">Ding</label>
+                                <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value='timer2' id="2">
+                                <label for="2" class="me-3">Two-tone chime</label>
+                                <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value='timer3' id="3">
+                                <label for="3">Chime</label>
                             </div>
 
                             <div class="d-flex justify-content-evenly">
-                                <button class="bi bi-play-circle-fill me-5" @click="playTrialSound()"></button>
-                                <button class="bi bi-play-circle-fill me-5"></button>
-                                <button class="bi bi-play-circle-fill"></button>
+                                <button class="bi bi-play-circle-fill me-5" @click="playTrialSound1"></button>
+                                <button class="bi bi-play-circle-fill me-5" @click="playTrialSound2"></button>
+                                <button class="bi bi-play-circle-fill" @click="playTrialSound3"></button>
                             </div>
                             <br>
                             <div class="d-flex justify-content-center">
