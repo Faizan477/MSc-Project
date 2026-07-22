@@ -12,19 +12,30 @@ export const useStudyTimerStore = defineStore('studyTimer',
                 shortBreakMinutesSet: 5,
                 longBreakMinutesSet: 15,
                 numSessionsSet: 6,
+                checkInSecondsSet:10,
                 minutes: 25,
                 seconds: 0,
+                checkInSeconds:10,
                 timerInterval: '',
+                checkInTimerInterval:'',
                 paused: false,
                 running: false,
                 startTime: 0,
                 endTime: 0,
+                checkInEndTime:0,
                 currentSession: 1,
                 currentShortBreak: 1,
                 currentLongBreak: 1,
                 shortBreak: false,
                 longBreak: false,
-                timerAlarmSound: 'timer1'
+                timerAlarmSound: 'timer1',
+                numCheckIns:5,
+                randomIntervals:false,
+                sittingStarted:false,
+                tasksForCurrentSession:[],
+                checkInSound:true,
+                intervals:[],
+                showCheckIn:false
             }
         },
         actions: {
@@ -38,8 +49,44 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     alert("Another timer is currently running. Please reset the existing timer to continue")
                 }
                 else {
+                    this.sittingStarted=true
+                    this.determineCheckInIntervals()
                     this.startTimer()
                 }
+            },
+            determineCheckInIntervals()
+            {
+                if(this.randomIntervals==true)
+                {
+                    console.log("Random interval selected")
+                    for(let i=0;i<this.numCheckIns;i++)
+                    {
+                        let seconds=this.minutesSet*60
+                        let secondsRange=seconds-30 //so that there won't be a check-in half a minute prior to the end of the session 
+                        let interval=(Math.floor(Math.random()*secondsRange))*1000
+                        this.intervals.push(interval)
+                    }
+                    this.intervals=this.intervals.sort((a,b)=>a-b)
+                }
+                else if(this.randomIntervals==false)
+                {
+                    console.log("Regular interval selected")
+                    let seconds=this.minutesSet*60
+                    let i=1
+                    let interval=(seconds/(this.numCheckIns+1))*1000
+                    while(i<this.numCheckIns+1)
+                    {
+                        this.intervals.push(interval*i)
+                        i++
+                    }
+                }
+                console.log(this.intervals)
+            },
+            startCheckInCountdown()
+            {
+                const millisecondsIn10Seconds=10000
+                this.checkInEndTime=Date.now()+millisecondsIn10Seconds
+                this.checkInTimerInterval=setInterval(()=>{this.updateCheckInTimer()},100)
             },
             startTimer() {
                 if (this.paused == true) {
@@ -112,6 +159,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     }
                     else {
                         //display cool congratulations animation 
+                        this.sittingStarted=false
                         this.minutes = this.minutesSet
                         this.seconds = 0
                         this.currentSession = 1
@@ -122,6 +170,19 @@ export const useStudyTimerStore = defineStore('studyTimer',
                 else {
                     this.minutes = Math.trunc(((this.endTime - Date.now()) / 60000))
                     this.seconds = Math.trunc(((this.endTime - Date.now()) % 60000) / 1000)
+                }
+            },
+            updateCheckInTimer()
+            {
+                if(this.checkInEndTime-Date.now()<=0)
+                {
+                    this.showCheckIn=false
+                    clearInterval(this.checkInTimerInterval)
+                    this.checkInSeconds=this.checkInSecondsSet
+                }
+                else
+                {
+                    this.seconds = Math.trunc(((this.checkInEndTime - Date.now()) % 60000) / 1000)
                 }
             },
             stopTimer() {
@@ -157,12 +218,18 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     this.shortBreak = false
                     this.longBreak = false
                 }
+                this.intervals=[]
+                this.tasksForCurrentSession=[]
+                this.sittingStarted=false
             },
         },
         getters:
         {
             millisecondsLeft: (state) => ((state.minutes * 60) + (state.seconds)) * 1000,
             millisecondsGone: (state) => (state.minutesSet * 60000 - state.millisecondsLeft),
-            percentageProgress: (state) => (state.millisecondsGone / (state.minutesSet * 60000)) * 100
+            percentageProgress: (state) => (state.millisecondsGone / (state.minutesSet * 60000)) * 100,
+            millisecondsLeftCheckIn:(state)=>(state.checkInSeconds*1000),
+            millisecondsGoneCheckIn:(state)=>(state.checkInSecondsSet*1000 - state.millisecondsLeftCheckIn),
+            percentageProgressCheckIn:(state)=>(state.millisecondsLeft /(state.checkInSecondsSet*1000))*100
         }
     })
