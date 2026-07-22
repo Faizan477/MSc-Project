@@ -197,9 +197,7 @@ export default
                                     a short self-reflection at the end of each session.
                                 </p>
                                 <label for="numCheckIn">Number of check-ins per session</label>
-                                <input v-if="randomIntervals" type="number" id="numCheckIn" class="w-100" v-model="numCheckIns"
-                                     :placeholder="'Please enter a value between 1 and '+(Math.round(minutesSet/6)) " maxlength="2">
-                                <input v-else type="number" id="numCheckIn" class="w-100" v-model="numCheckIns"
+                                <input type="number" id="numCheckIn" class="w-100" v-model="numCheckIns"
                                      :placeholder="'Please enter a value between 1 and '+ Math.round(minutesSet/5) " maxlength="2">
                                 <label v-if="this.numCheckIns>1" for="selectInterval">Random or evenly-spaced (every {{ Number.parseFloat(this.minutesSet/this.numCheckIns).toFixed(3) }} minutes in your {{ this.minutesSet }} minute session) intervals?</label>
                                 <label v-else for="selectInterval">Random or evenly-spaced (e,g. every 5 minutes in a 25 minute session) intervals?</label>
@@ -216,7 +214,7 @@ export default
                             </div>
                             <br>
                             <div class="d-flex justify-content-center">
-                                <button v-if="this.numCheckIns == '' || this.numCheckIns<1 || this.numCheckIns>(Math.round(minutesSet/6)) ||!(Number.isInteger(this.numCheckIns))" type="button" class="btn btn-success w-30 me-3"
+                                <button v-if="this.numCheckIns == '' || this.numCheckIns<1 || this.numCheckIns>(Math.round(minutesSet/5)) ||!(Number.isInteger(this.numCheckIns))" type="button" class="btn btn-success w-30 me-3"
                                     disabled>Done</button>
                                 <button v-else type="submit" class="btn btn-success w-30 me-3" data-bs-toggle="modal"
                                     data-bs-target="#initialCheckInModal" @click="setValidCheckInSettings()">Done</button>

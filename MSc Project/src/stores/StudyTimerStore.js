@@ -12,12 +12,9 @@ export const useStudyTimerStore = defineStore('studyTimer',
                 shortBreakMinutesSet: 5,
                 longBreakMinutesSet: 15,
                 numSessionsSet: 6,
-                checkInSecondsSet:10,
                 minutes: 25,
                 seconds: 0,
-                checkInSeconds:10,
                 timerInterval: '',
-                checkInTimerInterval:'',
                 paused: false,
                 running: false,
                 startTime: 0,
@@ -35,7 +32,8 @@ export const useStudyTimerStore = defineStore('studyTimer',
                 tasksForCurrentSession:[],
                 checkInSound:true,
                 intervals:[],
-                showCheckIn:false
+                showCheckIn:false,
+                checkInStartTime:0
             }
         },
         actions: {
@@ -66,7 +64,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         let interval=(Math.floor(Math.random()*secondsRange))*1000
                         this.intervals.push(interval)
                     }
-                    this.intervals=this.intervals.sort((a,b)=>a-b)
+                    this.intervals=this.intervals.sort((a,b)=>a-b).reverse()
                 }
                 else if(this.randomIntervals==false)
                 {
@@ -79,14 +77,9 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         this.intervals.push(interval*i)
                         i++
                     }
+                    this.intervals=this.intervals.reverse()
                 }
                 console.log(this.intervals)
-            },
-            startCheckInCountdown()
-            {
-                const millisecondsIn10Seconds=10000
-                this.checkInEndTime=Date.now()+millisecondsIn10Seconds
-                this.checkInTimerInterval=setInterval(()=>{this.updateCheckInTimer()},100)
             },
             startTimer() {
                 if (this.paused == true) {
@@ -168,21 +161,24 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     }
                 }
                 else {
+                    if((this.intervals.at(0)+this.startTime) - Date.now() <=0)
+                    {
+                        this.checkInStartTime=Date.now()
+                        this.checkInEndTime=Date.now()+10000
+                        console.log("Currently triggering the check in command")
+                        this.showCheckIn=true
+                        this.intervals.shift()
+                    }
+                    if(this.showCheckIn && this.checkInEndTime-Date.now()<=0)
+                    {
+                        console.log("I am correctly entering this loop.")
+                        this.showCheckIn=false
+                    }
+                    console.log(Date.now())
+                    console.log("Check-in percentage progress"+this.percentageProgressCheckIn)
+                    console.log(this.checkInEndTime)
                     this.minutes = Math.trunc(((this.endTime - Date.now()) / 60000))
                     this.seconds = Math.trunc(((this.endTime - Date.now()) % 60000) / 1000)
-                }
-            },
-            updateCheckInTimer()
-            {
-                if(this.checkInEndTime-Date.now()<=0)
-                {
-                    this.showCheckIn=false
-                    clearInterval(this.checkInTimerInterval)
-                    this.checkInSeconds=this.checkInSecondsSet
-                }
-                else
-                {
-                    this.seconds = Math.trunc(((this.checkInEndTime - Date.now()) % 60000) / 1000)
                 }
             },
             stopTimer() {
@@ -228,8 +224,8 @@ export const useStudyTimerStore = defineStore('studyTimer',
             millisecondsLeft: (state) => ((state.minutes * 60) + (state.seconds)) * 1000,
             millisecondsGone: (state) => (state.minutesSet * 60000 - state.millisecondsLeft),
             percentageProgress: (state) => (state.millisecondsGone / (state.minutesSet * 60000)) * 100,
-            millisecondsLeftCheckIn:(state)=>(state.checkInSeconds*1000),
-            millisecondsGoneCheckIn:(state)=>(state.checkInSecondsSet*1000 - state.millisecondsLeftCheckIn),
-            percentageProgressCheckIn:(state)=>(state.millisecondsLeft /(state.checkInSecondsSet*1000))*100
+            millisecondsLeftCheckIn:(state)=>(state.checkInEndTime-Date.now()),
+            millisecondsGoneCheckIn:(state)=>(Date.now() - state.checkInStartTime),
+            percentageProgressCheckIn:(state)=>(state.millisecondsLeftCheckIn /10000)*100
         }
     })

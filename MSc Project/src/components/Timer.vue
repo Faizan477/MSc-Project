@@ -35,7 +35,7 @@ export default
 <template>
     <div class="d-flex flex-column align-items-center">
         <h4 class="align-self-start">Start a session</h4>
-        <div v-if="studyTimerStore.showCheckIn == false" class="alert alert-info w-100 alert-dismissible">
+        <div v-if="studyTimerStore.showCheckIn" class="alert alert-info w-100 alert-dismissible">
             <div class="d-flex justify-content-between">
                 <strong>Are you focusing?</strong>
                 <button type="button" class="btn btn-dark close" data-bs-dismiss="alert">Yes <i
@@ -49,7 +49,7 @@ export default
             <div class="progress">
                 <div class="progress-bar bg-danger" role="progressbar" :style="{ width: studyTimerStore.percentageProgressCheckIn + '%' }"
                 :aria-valuenow="studyTimerStore.millisecondsGoneCheckIn" :aria-valuemin="0"
-                :aria-valuemax="(studyTimerStore.checkInSecondsSet) * 1000"></div>
+                :aria-valuemax=10000></div>
             </div>
         </div>
         <div v-if="standardTimer" class="d-flex justify-content-center">
