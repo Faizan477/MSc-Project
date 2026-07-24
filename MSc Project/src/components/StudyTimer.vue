@@ -1,6 +1,7 @@
 <script>
+import { bootstrap } from 'bootstrap/dist/js/bootstrap.js'
 import { useStudyTimerStore } from '../stores/StudyTimerStore.js';
-import { mapStores } from 'pinia'
+import { mapStores, mapWritableState } from 'pinia'
 import timer1 from '../assets/timerAlarmSounds/timer1.mp3'
 import timer2 from '../assets/timerAlarmSounds/timer2.mp3'
 import timer3 from '../assets/timerAlarmSounds/timer3.mp3'
@@ -18,14 +19,31 @@ export default
                 tasksForToday: [],
                 tasksForCurrentSession: [],
                 checkInSound: true,
-                numCheckIns:5,
-                randomIntervals:false,
-                showCheckIn:false
+                numCheckIns: 5,
+                randomIntervals: false,
+                showCheckIn: false,
+                selfReflectionModal:false
             }
         },
         computed:
         {
-            ...mapStores(useStudyTimerStore)
+            ...mapStores(useStudyTimerStore),
+            ...mapWritableState(useStudyTimerStore,['showSelfReflectionModal'])
+        },
+        watch:
+        {
+            showSelfReflectionModal()
+            {
+                const reflectionModal= new bootstrap.Modal('#selfReflectionModal')
+                if(this.showSelfReflectionModal)
+                {
+                    reflectionModal.show()
+                }
+                else
+                {
+                    reflectionModal.hide()
+                }
+            }
         },
         methods:
         {
@@ -36,15 +54,13 @@ export default
                 this.studyTimerStore.numSessionsSet = this.numSessionsSet
                 this.studyTimerStore.timerAlarmSound = this.timerAlarmSound
 
-                
                 this.studyTimerStore.resetTimer()
             },
-            setValidCheckInSettings()
-            {
-                this.studyTimerStore.randomIntervals=this.randomIntervals
+            setValidCheckInSettings() {
+                this.studyTimerStore.randomIntervals = this.randomIntervals
                 this.studyTimerStore.tasksForCurrentSession = this.tasksForCurrentSession
                 this.studyTimerStore.checkInSound = this.checkInSound
-                this.studyTimerStore.numCheckIns=this.numCheckIns
+                this.studyTimerStore.numCheckIns = this.numCheckIns
                 this.studyTimerStore.startPomodoroTimer()
             },
             playTrialSound1() {
@@ -88,7 +104,7 @@ export default
         </div>
         <br>
         <p v-if="!(studyTimerStore.longBreak || studyTimerStore.shortBreak)">Session {{ studyTimerStore.currentSession
-            }} of {{ studyTimerStore.numSessionsSet }} </p>
+        }} of {{ studyTimerStore.numSessionsSet }} </p>
         <p v-else-if="studyTimerStore.longBreak">Long break {{ studyTimerStore.currentLongBreak }} of {{
             Math.floor(studyTimerStore.numSessionsSet / 4) }}</p>
         <p v-else>Short break {{ studyTimerStore.currentShortBreak }} of {{ }}</p>
@@ -178,8 +194,8 @@ export default
                     <div class="modal-body">
                         <form @submit.prevent="" class="d-flex flex-column align-items-center">
                             <div v-if="tasksForToday.length != 0">
-                                <p>Select the task(s) you plan to work on during this {{ this.studyTimerStore.minutesSet
-                                    }} minute session</p>
+                                <p>Select the task(s) you plan to work on during these {{ studyTimerStore.numSessionsSet
+                                    }} sessions</p>
                                 <div class="form-check" v-for="task in tasksForToday" :key="task.id">
                                     <input class="form-check-input" type="checkbox" :value="task.id"
                                         v-model="tasksForCurrentSession" :id="'checkBox' + task.id">
@@ -198,12 +214,17 @@ export default
                                 </p>
                                 <label for="numCheckIn">Number of check-ins per session</label>
                                 <input type="number" id="numCheckIn" class="w-100" v-model="numCheckIns"
-                                     :placeholder="'Please enter a value between 1 and '+ Math.round(minutesSet/5) " maxlength="2">
-                                <label v-if="this.numCheckIns>1" for="selectInterval">Random or evenly-spaced (every {{ Number.parseFloat(this.minutesSet/this.numCheckIns).toFixed(3) }} minutes in your {{ this.minutesSet }} minute session) intervals?</label>
-                                <label v-else for="selectInterval">Random or evenly-spaced (e,g. every 5 minutes in a 25 minute session) intervals?</label>
+                                    :placeholder="'Please enter a value between 1 and ' + Math.round(minutesSet / 5)"
+                                    maxlength="2">
+                                <label v-if="this.numCheckIns > 1" for="selectInterval">Random or evenly-spaced (every {{
+                                    Number.parseFloat(this.minutesSet /this.numCheckIns).toFixed(3) }} minutes in your {{
+                                    this.minutesSet }} minute session) intervals?</label>
+                                <label v-else for="selectInterval">Random or evenly-spaced (e,g. every 5 minutes in a 25
+                                    minute session) intervals?</label>
                                 <select v-model="randomIntervals" class="form-select" id="selectInterval">
                                     <option :value=false selected>Regular, evenly-spaced intervals</option>
-                                    <option :value=true>Random intervals  (you can't predict when the next one is!)</option>
+                                    <option :value=true>Random intervals (you can't predict when the next one is!)
+                                    </option>
                                 </select>
                             </div>
                             <div class="form-check form-switch">
@@ -214,10 +235,40 @@ export default
                             </div>
                             <br>
                             <div class="d-flex justify-content-center">
-                                <button v-if="this.numCheckIns == '' || this.numCheckIns<1 || this.numCheckIns>(Math.round(minutesSet/5)) ||!(Number.isInteger(this.numCheckIns))" type="button" class="btn btn-success w-30 me-3"
+                                <button
+                                    v-if="this.numCheckIns == '' || this.numCheckIns < 1 || this.numCheckIns > (Math.round(minutesSet / 5)) || !(Number.isInteger(this.numCheckIns))"
+                                    type="button" class="btn btn-success w-30 me-3" disabled>Done</button>
+                                <button v-else type="submit" class="btn btn-success w-30 me-3" data-bs-toggle="modal"
+                                    data-bs-target="#initialCheckInModal"
+                                    @click="setValidCheckInSettings()">Done</button>
+                                <br>
+                                <button type="button" class="btn btn-secondary w-30"
+                                    data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="selfReflectionModal" role="dialog" aria-labelledby="selfReflectionModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="selfReflectionModalLabel">Self-reflection time!</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form @submit.prevent="addQuote" class="d-flex flex-column align-items-center">
+                            <label for="quoteText"></label>
+                            <input type="text" id="quoteText" class="w-100" v-model="quoteText" required>
+                            <label for="quoteAuthor">Quote Author</label>
+                            <input type="text" id="quoteAuthor" class="w-100" v-model="quoteAuthor">
+                            <br>
+                            <div class="d-flex justify-content-center">
+                                <button v-if="this.quoteText == ''" type="button" class="btn btn-success w-30 me-3"
                                     disabled>Done</button>
                                 <button v-else type="submit" class="btn btn-success w-30 me-3" data-bs-toggle="modal"
-                                    data-bs-target="#initialCheckInModal" @click="setValidCheckInSettings()">Done</button>
+                                    data-bs-target="#addQuoteModal">Done</button>
                                 <br>
                                 <button type="button" class="btn btn-secondary w-30"
                                     data-bs-dismiss="modal">Close</button>

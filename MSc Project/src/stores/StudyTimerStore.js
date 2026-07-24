@@ -33,7 +33,10 @@ export const useStudyTimerStore = defineStore('studyTimer',
                 checkInSound:true,
                 intervals:[],
                 showCheckIn:false,
-                checkInStartTime:0
+                showSelfReflectionModal:false,
+                checkInStartTime:0,
+                millisecondsLeftCheckIn:0,
+                percentageProgressCheckIn:100
             }
         },
         actions: {
@@ -102,6 +105,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         this.timerInterval = setInterval(() => { this.updateTimer() }, 100)
                     }
                     else {
+                        this.determineCheckInIntervals()
                         this.startTime = Date.now()
                         this.endTime = this.startTime + (this.minutesSet * 60000)
                         this.running = true
@@ -124,6 +128,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         let sound = new Howl({ src: [timer3] })
                         sound.play()
                     }
+                    this.showSelfReflectionModal=true
                     if (this.shortBreak == true || this.longBreak == true) {
                         this.minutes = this.minutesSet
                         this.seconds = 0
@@ -137,6 +142,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         }
                     }
                     else if (this.currentSession < this.numSessionsSet) {
+                        this.showSelfReflectionModal=true
                         if (this.currentSession % 4 == 0) {
                             this.longBreak = true
                             this.minutes = this.longBreakMinutesSet
@@ -151,7 +157,8 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         }
                     }
                     else {
-                        //display cool congratulations animation 
+                        //display cool congratulations animation
+                        this.showSelfReflectionModal=true
                         this.sittingStarted=false
                         this.minutes = this.minutesSet
                         this.seconds = 0
@@ -164,15 +171,19 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     if((this.intervals.at(0)+this.startTime) - Date.now() <=0)
                     {
                         this.checkInStartTime=Date.now()
-                        this.checkInEndTime=Date.now()+10000
+                        this.checkInEndTime=Date.now()+20000
                         console.log("Currently triggering the check in command")
                         this.showCheckIn=true
                         this.intervals.shift()
                     }
                     if(this.showCheckIn && this.checkInEndTime-Date.now()<=0)
                     {
-                        console.log("I am correctly entering this loop.")
                         this.showCheckIn=false
+                    }
+                    else if(this.showCheckIn)
+                    {
+                        //updating the progress bar
+                        this.updateProgressBar()
                     }
                     console.log(Date.now())
                     console.log("Check-in percentage progress"+this.percentageProgressCheckIn)
@@ -180,6 +191,11 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     this.minutes = Math.trunc(((this.endTime - Date.now()) / 60000))
                     this.seconds = Math.trunc(((this.endTime - Date.now()) % 60000) / 1000)
                 }
+            },
+            updateProgressBar()
+            {
+                this.millisecondsLeftCheckIn=this.checkInEndTime-Date.now()
+                this.percentageProgressCheckIn=(this.millisecondsLeftCheckIn /20000)*100
             },
             stopTimer() {
                 this.running = false
@@ -224,8 +240,5 @@ export const useStudyTimerStore = defineStore('studyTimer',
             millisecondsLeft: (state) => ((state.minutes * 60) + (state.seconds)) * 1000,
             millisecondsGone: (state) => (state.minutesSet * 60000 - state.millisecondsLeft),
             percentageProgress: (state) => (state.millisecondsGone / (state.minutesSet * 60000)) * 100,
-            millisecondsLeftCheckIn:(state)=>(state.checkInEndTime-Date.now()),
-            millisecondsGoneCheckIn:(state)=>(Date.now() - state.checkInStartTime),
-            percentageProgressCheckIn:(state)=>(state.millisecondsLeftCheckIn /10000)*100
         }
     })

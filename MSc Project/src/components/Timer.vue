@@ -47,9 +47,7 @@ export default
             </div>
             <br>
             <div class="progress">
-                <div class="progress-bar bg-danger" role="progressbar" :style="{ width: studyTimerStore.percentageProgressCheckIn + '%' }"
-                :aria-valuenow="studyTimerStore.millisecondsGoneCheckIn" :aria-valuemin="0"
-                :aria-valuemax=10000></div>
+                <div class="progress-bar bg-danger" role="progressbar" :style="{ width: studyTimerStore.percentageProgressCheckIn + '%' }"></div>
             </div>
         </div>
         <div v-if="standardTimer" class="d-flex justify-content-center">
