@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { Howl, Howler } from 'howler'
+import { Modal } from 'bootstrap'
 import { useFiveMinuteTimerStore } from './FiveMinuteTimerStore'
 import timer1 from '../assets/timerAlarmSounds/timer1.mp3'
 import timer2 from '../assets/timerAlarmSounds/timer2.mp3'
@@ -129,6 +130,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         sound.play()
                     }
                     this.showSelfReflectionModal=true
+                    this.toggleSelfReflectionModal()
                     if (this.shortBreak == true || this.longBreak == true) {
                         this.minutes = this.minutesSet
                         this.seconds = 0
@@ -143,6 +145,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     }
                     else if (this.currentSession < this.numSessionsSet) {
                         this.showSelfReflectionModal=true
+                        this.toggleSelfReflectionModal()
                         if (this.currentSession % 4 == 0) {
                             this.longBreak = true
                             this.minutes = this.longBreakMinutesSet
@@ -159,6 +162,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     else {
                         //display cool congratulations animation
                         this.showSelfReflectionModal=true
+                        this.toggleSelfReflectionModal()
                         this.sittingStarted=false
                         this.minutes = this.minutesSet
                         this.seconds = 0
@@ -191,6 +195,11 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     this.minutes = Math.trunc(((this.endTime - Date.now()) / 60000))
                     this.seconds = Math.trunc(((this.endTime - Date.now()) % 60000) / 1000)
                 }
+            },
+            toggleSelfReflectionModal()
+            {
+                const selfReflectionModal=Modal.getOrCreateInstance(document.getElementById('selfReflectionModal'))
+                selfReflectionModal.toggle()
             },
             updateProgressBar()
             {
@@ -238,7 +247,21 @@ export const useStudyTimerStore = defineStore('studyTimer',
         getters:
         {
             millisecondsLeft: (state) => ((state.minutes * 60) + (state.seconds)) * 1000,
-            millisecondsGone: (state) => (state.minutesSet * 60000 - state.millisecondsLeft),
+            millisecondsGone(state)
+            {
+                if(this.longBreak)
+                {
+                    return state.longBreakMinutesSet * 60000 - state.millisecondsLeft
+                }
+                else if(this.shortBreak)
+                {
+                    return state.shortBreakMinutesSet * 60000 - state.millisecondsLeft
+                }
+                else
+                {
+                    return state.minutesSet * 60000 - state.millisecondsLeft
+                }
+            },
             percentageProgress: (state) => (state.millisecondsGone / (state.minutesSet * 60000)) * 100,
         }
     })

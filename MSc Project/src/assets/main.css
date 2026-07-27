@@ -12,3 +12,11 @@
     padding:0;
     margin:0.75em;
 }
+input:checked + label div
+{
+    border: 0.2em solid black;
+}
+input:hover + label div
+{
+    border: 0.4em solid black;
+}

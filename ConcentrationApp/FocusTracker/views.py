@@ -148,6 +148,37 @@ def quote_list(request):
         models.Quote.objects.create(user=request.user,text=request_body['text'],author=request_body['author'])
         return JsonResponse({'created':'true'})
     return JsonResponse([quote.to_dict() for quote in models.Quote.objects.filter(user=request.user)],safe=False)
+
+@login_required
+def overall_concentration_evaluation(request):
+    if request.method=='POST':
+        request_body=json.loads(request.body)
+        models.OverallConcentrationEvaluation.objects.create(user=request.user,timestamp=request_body['timestamp'],red=request_body['red'],amber=request_body['amber'],green=request_body['green'])
+        return JsonResponse({'created':True})
+    return JsonResponse([evaluation.to_dict() for evaluation in models.OverallConcentrationEvaluation.objects.filter(overall_concentration_evaluation__user=request.user)],safe=False)
+
+@login_required
+def check_in_evaluation(request):
+    if request.method=='POST':
+        request_body=json.loads(request.body)
+        models.CheckInEvaluation.objects.create(user=request.user,timestamp=request_body['timestamp'],focusing=request_body['focusing'],sort_of_focusing=request_body['sort_of_focusing'],not_focusing=request_body['not_focusing'])
+        return JsonResponse({'created':True})
+    return JsonResponse([check_in_evaluation.to_dict() for evaluation in models.CheckInEvaluation.objects.filter(check_in_evaluation__user=request.user)],safe=False)
+
+@login_required
+def distractions_evaluation(request):
+    if request.method=='POST':
+        request_body=json.loads(request.body)
+        models.DistractionsEvaluation.objects.create(user=request.user,timestamp=request_body['timestamp'],zoning_out=request_body['zoning_out'],phone=request_body['phone'],starting_other_tasks=request_body['starting_other_tasks'],eating=request_body['eating'])
+        return JsonResponse({'created':True})
+    return JsonResponse([distractions_evaluation.to_dict() for evaluation in models.DistractionsEvaluation.objects.filter(distractions_evaluation__user=request.user)],safe=False)
+
+@login_required
+def last_task_progress(request):
+    if request.method=='PUT':
+        request_body=json.loads(request.body)
+        object=models.LastTaskProgress.objects.get_or_create(id=request.GET.get('id'),defaults={'user':request.user,'red_task_id':request_body['red_task_id'],'amber_task_id':request_body['amber_task_id'],'improvement':['improvement']})
+        
         
 def register(request):
     register_form=forms.RegisterForm()

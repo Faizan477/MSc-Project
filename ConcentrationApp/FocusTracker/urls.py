@@ -14,5 +14,9 @@ urlpatterns=[
     path('subtask_list/',views.subtask_list,name='subtask_list'),
     path('subtask_completed/<int:id>/',views.subtask_completed,name='subtask_completed'),
     path('quote/<int:id>/',views.quote,name='quote'),
-    path('quote_list/',views.quote_list,name='quote_list')
+    path('quote_list/',views.quote_list,name='quote_list'),
+    path('overall_concentration_evaluation/',views.overall_concentration_evaluation,name='overall_concentration_evaluation'),
+    path('check_in_evaluation/',views.check_in_evaluation,name='check_in_evaluation'),
+    path('distractions_evaluation/',views.distractions_evaluation,name='distractions_evaluation'),
+    path('last_task_progress/<int:id>/',views.last_task_progress,name='last_task_progress')
 ]

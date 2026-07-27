@@ -1,5 +1,5 @@
 <script>
-import { bootstrap } from 'bootstrap/dist/js/bootstrap.js'
+import { Modal } from 'bootstrap';
 import { useStudyTimerStore } from '../stores/StudyTimerStore.js';
 import { mapStores, mapWritableState } from 'pinia'
 import timer1 from '../assets/timerAlarmSounds/timer1.mp3'
@@ -7,6 +7,7 @@ import timer2 from '../assets/timerAlarmSounds/timer2.mp3'
 import timer3 from '../assets/timerAlarmSounds/timer3.mp3'
 import Tasks from './Tasks.vue'
 import TaskDate from './TaskDate.vue';
+import '../assets/main.css'
 export default
     {
         data() {
@@ -22,28 +23,16 @@ export default
                 numCheckIns: 5,
                 randomIntervals: false,
                 showCheckIn: false,
-                selfReflectionModal:false
+                selfReflectionModal: false,
+                overallConcentrationRating: '',
+                commonDistractionList: [{ id: 1, description: "Zoning out", checked: '' }, { id: 2, description: "Phone", checked: '' },
+                { id: 3, description: "Starting other tasks", checked: '' }, { id: 4, description: "Eating snacks", checked: '' }]
             }
         },
         computed:
         {
             ...mapStores(useStudyTimerStore),
-            ...mapWritableState(useStudyTimerStore,['showSelfReflectionModal'])
-        },
-        watch:
-        {
-            showSelfReflectionModal()
-            {
-                const reflectionModal= new bootstrap.Modal('#selfReflectionModal')
-                if(this.showSelfReflectionModal)
-                {
-                    reflectionModal.show()
-                }
-                else
-                {
-                    reflectionModal.hide()
-                }
-            }
+            ...mapWritableState(useStudyTimerStore, ['showSelfReflectionModal'])
         },
         methods:
         {
@@ -90,6 +79,9 @@ export default
                 let response = await fetch("http://localhost:8000/task_list/?date=" + date, { credentials: 'include' })
                 let tasksForToday = await response.json()
                 this.tasksForToday = tasksForToday.filter(this.filterIncompleteTasks)
+            },
+            clearTasksForToday() {
+                this.tasksForToday = []
             }
         }
     }
@@ -192,12 +184,12 @@ export default
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="close"></button>
                     </div>
                     <div class="modal-body">
-                        <form @submit.prevent="" class="d-flex flex-column align-items-center">
+                        <form @submit.prevent="clearTasksForToday()" class="d-flex flex-column align-items-center">
                             <div v-if="tasksForToday.length != 0">
                                 <p>Select the task(s) you plan to work on during these {{ studyTimerStore.numSessionsSet
                                     }} sessions</p>
                                 <div class="form-check" v-for="task in tasksForToday" :key="task.id">
-                                    <input class="form-check-input" type="checkbox" :value="task.id"
+                                    <input class="form-check-input" type="checkbox" :value="task"
                                         v-model="tasksForCurrentSession" :id="'checkBox' + task.id">
                                     <label :for="'checkBox' + task.id" class="form-check-label"
                                         :id="'checkBox' + task.id">{{ task.task_name }}</label>
@@ -216,9 +208,11 @@ export default
                                 <input type="number" id="numCheckIn" class="w-100" v-model="numCheckIns"
                                     :placeholder="'Please enter a value between 1 and ' + Math.round(minutesSet / 5)"
                                     maxlength="2">
-                                <label v-if="this.numCheckIns > 1" for="selectInterval">Random or evenly-spaced (every {{
-                                    Number.parseFloat(this.minutesSet /this.numCheckIns).toFixed(3) }} minutes in your {{
-                                    this.minutesSet }} minute session) intervals?</label>
+                                <label v-if="this.numCheckIns > 1" for="selectInterval">Random or evenly-spaced (every
+                                    {{
+                                        Number.parseFloat(this.minutesSet / this.numCheckIns).toFixed(3) }} minutes in your
+                                    {{
+                                        this.minutesSet }} minute session) intervals?</label>
                                 <label v-else for="selectInterval">Random or evenly-spaced (e,g. every 5 minutes in a 25
                                     minute session) intervals?</label>
                                 <select v-model="randomIntervals" class="form-select" id="selectInterval">
@@ -250,6 +244,11 @@ export default
                 </div>
             </div>
         </div>
+        <div>
+            <h1>TEST ONLY - MODAL</h1>
+            <button type="button" class="btn btn-secondary" data-bs-toggle="modal"
+                data-bs-target="#selfReflectionModal">TEST</button>
+        </div>
         <div class="modal fade" id="selfReflectionModal" role="dialog" aria-labelledby="selfReflectionModalLabel">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -258,17 +257,124 @@ export default
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="close"></button>
                     </div>
                     <div class="modal-body">
-                        <form @submit.prevent="addQuote" class="d-flex flex-column align-items-center">
-                            <label for="quoteText"></label>
-                            <input type="text" id="quoteText" class="w-100" v-model="quoteText" required>
-                            <label for="quoteAuthor">Quote Author</label>
-                            <input type="text" id="quoteAuthor" class="w-100" v-model="quoteAuthor">
+                        <form @submit.prevent class="d-flex flex-column justify-content-center">
+                            <p class="me-auto fw-bold">Rate your overall focus during these sessions:</p>
+                            <div class="d-flex justify-content-center">
+                                <div class="form-check">
+                                    <input type="radio" id="red" value="red" v-model="overallConcentrationRating"
+                                        style="display: none;">
+                                    <label for="red">
+                                        <div class="bg-danger rounded-circle" style="width: 1.5rem; height: 1.5rem;">
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" id="amber" value="amber" v-model="overallConcentrationRating"
+                                        style="display: none;">
+                                    <label for="amber">
+                                        <div class="bg-warning rounded-circle" style="width: 1.5rem; height: 1.5rem;">
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" id="green" value="green" v-model="overallConcentrationRating"
+                                        style="display: none;">
+                                    <label for="green">
+                                        <div class="bg-success rounded-circle" style="width: 1.5rem; height: 1.5rem;">
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div v-if="tasksForCurrentSession.length != 0">
+                                <p class="fw-bold">How much progress do you feel you made towards these tasks?</p>
+                                <div v-for="task in tasksForCurrentSession" :key="task.id">
+                                    <div class="d-flex justify-content-center">
+                                        <p class="me-auto">{{ task.task_name }}</p>
+                                        <div class="form-check">
+                                            <input type="radio" :name="'radioGroup' + task.id" :id="'red' + task.id"
+                                                value="red" v-model="task.concentrationRating" style="display: none;">
+                                            <label :for="'red' + task.id">
+                                                <div class="bg-danger rounded-circle">
+                                                    <div class="bg-danger rounded-circle"
+                                                        style="width: 1.5rem; height: 1.5rem;"></div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input type="radio" :name="'radioGroup' + task.id" :id="'amber' + task.id"
+                                                value="amber" v-model="task.concentrationRating" style="display: none;">
+                                            <label :for="'amber' + task.id">
+                                                <div class="bg-warning rounded-circle">
+                                                    <div class="bg-warning rounded-circle"
+                                                        style="width: 1.5rem; height: 1.5rem;"></div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input type="radio" :name="'radioGroup' + task.id" :id="'green' + task.id"
+                                                value="green" v-model="task.concentrationRating" style="display: none;">
+                                            <label :for="'green' + task.id">
+                                                <div class="bg-success rounded-circle">
+                                                    <div class="bg-success rounded-circle"
+                                                        style="width: 1.5rem; height: 1.5rem;"></div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-100">
+                                <p class="fw-bold">How well did you avoid these distractions?</p>
+                                <div v-for="distraction in commonDistractionList" :key="distraction.id">
+                                    <div class="d-flex justify-content-center">
+                                        <p class="me-auto">{{ distraction.description }}</p>
+                                        <div class="form-check">
+                                            <input type="radio" :name="'radioGroup' + distraction.id"
+                                                :id="'red' + distraction.id" value="red" v-model="distraction.checked"
+                                                style="display: none;">
+                                            <label :for="'red' + distraction.id">
+                                                <div class="bg-danger rounded-circle">
+                                                    <div class="bg-danger rounded-circle"
+                                                        style="width: 1.5rem; height: 1.5rem;"></div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input type="radio" :name="'radioGroup' + distraction.id"
+                                                :id="'amber' + distraction.id" value="amber"
+                                                v-model="distraction.checked" style="display: none;">
+                                            <label :for="'amber' + distraction.id">
+                                                <div class="bg-warning rounded-circle">
+                                                    <div class="bg-warning rounded-circle"
+                                                        style="width: 1.5rem; height: 1.5rem;"></div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input type="radio" :name="'radioGroup' + distraction.id"
+                                                :id="'green' + distraction.id" value="green"
+                                                v-model="distraction.checked" style="display: none;">
+                                            <label :for="'green' + distraction.id">
+                                                <div class="bg-success rounded-circle">
+                                                    <div class="bg-success rounded-circle"
+                                                        style="width: 1.5rem; height: 1.5rem;"></div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <label for="improvementForNextTime" class="fw-bold">What steps do you want to take next time to improve your
+                                focus?</label>
+                            <input id="improvementForNextTime" type="text" class="w-100">
+
                             <br>
                             <div class="d-flex justify-content-center">
                                 <button v-if="this.quoteText == ''" type="button" class="btn btn-success w-30 me-3"
                                     disabled>Done</button>
                                 <button v-else type="submit" class="btn btn-success w-30 me-3" data-bs-toggle="modal"
-                                    data-bs-target="#addQuoteModal">Done</button>
+                                    data-bs-target="#selfReflectionModal">Done</button>
                                 <br>
                                 <button type="button" class="btn btn-secondary w-30"
                                     data-bs-dismiss="modal">Close</button>

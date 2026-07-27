@@ -37,4 +37,44 @@ class UserSetting(models.Model):
     short_break_length=models.IntegerField(default=5)
     long_break_length=models.IntegerField(default=15)
     num_sessions=models.IntegerField(default=6)
+
+class OverallConcentrationEvaluation(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    timestamp=models.DateTimeField()
+    red=models.IntegerField(default=0)
+    amber=models.IntegerField(default=0)
+    green=models.IntegerField(default=0)
     
+    def to_dict(self):
+            return {'id':self.id,'user':self.user.id,'timestamp':self.timestamp, 'red':self.red,'amber':self.amber, 'green':self.green}
+
+class CheckInEvaluation(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    timestamp=models.DateTimeField()
+    focusing=models.IntegerField(default=0)
+    sort_of_focusing=models.IntegerField(default=0)
+    not_focusing=models.IntegerField(default=0)
+    
+    def to_dict(self):
+                return {'id':self.id,'user':self.user.id,'timestamp':self.timestamp, 'focusing':self.focusing,'sort_of_focusing':self.sort_of_focusing, 'not_focusing':self.not_focusing}
+    
+class DistractionsEvaluation(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    timestamp=models.DateTimeField()
+    zoning_out=models.IntegerField(default=0)
+    phone=models.IntegerField(default=0)
+    starting_other_tasks=models.IntegerField(default=0)
+    eating=models.IntegerField(default=0)
+    
+    def to_dict(self):
+                return {'id':self.id,'user':self.user.id,'timestamp':self.timestamp, 'zoning_out':self.zoning_out,'phone':self.phone,'starting_other_tasks':self.starting_other_tasks,'eating':self.eating}
+
+#needs PUT requests 
+class LastTaskProgress(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    red_task_id=models.IntegerField()
+    amber_task_id=models.IntegerField()
+    improvement=models.TextField()
+    
+    def to_dict(self):
+                return {'id':self.id,'user':self.user.id,'red_task_id':self.red_task_id, 'amber_task_id':self.amber_task_id,'improvement':self.improvement}
