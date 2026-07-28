@@ -26,7 +26,8 @@ export default
                 selfReflectionModal: false,
                 overallConcentrationRating: '',
                 commonDistractionList: [{ id: 1, description: "Zoning out", checked: '' }, { id: 2, description: "Phone", checked: '' },
-                { id: 3, description: "Starting other tasks", checked: '' }, { id: 4, description: "Eating snacks", checked: '' }]
+                { id: 3, description: "Starting other tasks", checked: '' }, { id: 4, description: "Eating snacks", checked: '' }],
+                improvement: ''
             }
         },
         computed:
@@ -36,6 +37,11 @@ export default
         },
         methods:
         {
+            async getCsrfCookie() {
+                let csrfCookie = await cookieStore.get('csrftoken')
+                console.log(csrfCookie.value.length)
+                return csrfCookie.value
+            },
             setValidTimerSettings() {
                 this.studyTimerStore.minutesSet = this.minutesSet
                 this.studyTimerStore.shortBreakMinutesSet = this.shortBreakMinutesSet
@@ -82,7 +88,88 @@ export default
             },
             clearTasksForToday() {
                 this.tasksForToday = []
-            }
+            },
+            async submitReflection() {
+                this.studyTimerStore.toggleSelfReflectionModal()
+                await this.submitOverallConcentrationReflection()
+                await this.submitDistractionsReflection()
+                await this.submitLastTasksReflection()
+                this.tasksForToday=[]
+                this.tasksForCurrentSession=[]
+                this.overallConcentrationRating=''
+                for(let i=0;i<this.commonDistractionList.length;i++)
+                {
+                    this.commonDistractionList[i].checked=''
+                }
+                this.improvement=''
+            },
+            async submitOverallConcentrationReflection() {
+                const response = await fetch("http://localhost:8000/overall_concentration_evaluation/",
+                    {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'X-CSRFToken': await this.getCsrfCookie() },
+                        body: JSON.stringify({ 'timestamp': new Date(Date.now()).toISOString(), 'red': this.overallConcentrationRating == 'red' ? 1 : 0, 'amber': this.overallConcentrationRating == 'amber' ? 1 : 0, 'green': this.overallConcentrationRating == 'green' ? 1 : 0 })
+                    })
+                let created = await response.json()
+                if (created.created != true) {
+                    alert("An error occured submitting the form. Please try again later.")
+                }
+            },
+            async submitDistractionsReflection() {
+                let valuesToAdd = [0, 0, 0, 0]
+                for (let i = 0; i < this.commonDistractionList.length; i++) {
+                    if (this.commonDistractionList[i].checked == 'red') {
+                        valuesToAdd[i] = 0.33
+                    }
+                    else if (this.commonDistractionList[i].checked == 'amber') {
+                        valuesToAdd[i] = 0.67
+                    }
+                    else {
+                        valuesToAdd[i] = 1
+                    }
+                }
+                const response = await fetch("http://localhost:8000/distractions_evaluation/",
+                    {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'X-CSRFToken': await this.getCsrfCookie() },
+                        body: JSON.stringify({ 'timestamp': new Date(Date.now()).toISOString(), 'zoning_out': valuesToAdd[0], 'phone': valuesToAdd[1], 'starting_other_tasks': valuesToAdd[2], 'eating': valuesToAdd[3] })
+                    })
+                let created = await response.json()
+                if (created.created != true) {
+                    alert("An error occured submitting the form. Please try again later.")
+                }
+            },
+            async identifyRedTaskToWorkOn() {
+                for (let i = 0; i < this.tasksForCurrentSession.length; i++) {
+                    if (this.tasksForCurrentSession[i].concentrationRating == 'red') {
+                        return this.tasksForCurrentSession[i].id
+                    }
+                }
+                return 0
+            },
+            async identifyAmberTaskToWorkOn() {
+                for (let i = 0; i < this.tasksForCurrentSession.length; i++) {
+                    if (this.tasksForCurrentSession[i].concentrationRating == 'amber') {
+                        return this.tasksForCurrentSession[i].id
+                    }
+                }
+                return 0
+            },
+            async submitLastTasksReflection() {
+                const response = await fetch("http://localhost:8000/last_task_progress/",
+                    {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'X-CSRFToken': await this.getCsrfCookie() },
+                        body: JSON.stringify({ 'timestamp': new Date(Date.now()).toISOString(), 'red_task_id': await this.identifyRedTaskToWorkOn(), 'amber_task_id': await this.identifyAmberTaskToWorkOn(), 'improvement': this.improvement })
+                    })
+                let created = await response.json()
+                if (created.created != true) {
+                    alert("An error occured submitting the form. Please try again later.")
+                }
+            },
         }
     }
 </script>
@@ -257,7 +344,7 @@ export default
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="close"></button>
                     </div>
                     <div class="modal-body">
-                        <form @submit.prevent class="d-flex flex-column justify-content-center">
+                        <form @submit.prevent="submitReflection" class="d-flex flex-column justify-content-center">
                             <p class="me-auto fw-bold">Rate your overall focus during these sessions:</p>
                             <div class="d-flex justify-content-center">
                                 <div class="form-check">
@@ -365,13 +452,14 @@ export default
                                 </div>
                             </div>
 
-                            <label for="improvementForNextTime" class="fw-bold">What steps do you want to take next time to improve your
+                            <label for="improvementForNextTime" class="fw-bold">What steps do you want to take next time
+                                to improve your
                                 focus?</label>
-                            <input id="improvementForNextTime" type="text" class="w-100">
+                            <input id="improvementForNextTime" v-model="improvement" type="text" class="w-100">
 
                             <br>
                             <div class="d-flex justify-content-center">
-                                <button v-if="this.quoteText == ''" type="button" class="btn btn-success w-30 me-3"
+                                <button v-if="this.improvement == ''" type="button" class="btn btn-success w-30 me-3"
                                     disabled>Done</button>
                                 <button v-else type="submit" class="btn btn-success w-30 me-3" data-bs-toggle="modal"
                                     data-bs-target="#selfReflectionModal">Done</button>

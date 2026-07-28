@@ -18,5 +18,5 @@ urlpatterns=[
     path('overall_concentration_evaluation/',views.overall_concentration_evaluation,name='overall_concentration_evaluation'),
     path('check_in_evaluation/',views.check_in_evaluation,name='check_in_evaluation'),
     path('distractions_evaluation/',views.distractions_evaluation,name='distractions_evaluation'),
-    path('last_task_progress/<int:id>/',views.last_task_progress,name='last_task_progress')
+    path('last_task_progress/',views.last_task_progress,name='last_task_progress')
 ]

@@ -19,6 +19,11 @@ export default
         },
         methods:
         {
+            async getCsrfCookie() {
+                let csrfCookie = await cookieStore.get('csrftoken')
+                console.log(csrfCookie.value.length)
+                return csrfCookie.value
+            },
             handle5MinuteTimerToggleButton() {
                 if (this.standardTimer == true) {
                     this.standardTimer = false
@@ -29,6 +34,20 @@ export default
                     this.standardTimer = true
                 }
             },
+            async submitCheckInReflection(value)
+            {
+                const response = await fetch("http://localhost:8000/check_in_evaluation/",
+                    {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'X-CSRFToken': await this.getCsrfCookie() },
+                        body: JSON.stringify({ 'timestamp': new Date(Date.now()).toISOString(), 'focusing_value':value })
+                    })
+                let created = await response.json()
+                if (created.created != true) {
+                    alert("An error occured saving the check-in.")
+                }
+            }
         }
     }
 </script>
@@ -38,11 +57,11 @@ export default
         <div v-if="studyTimerStore.showCheckIn" class="alert alert-info w-100 alert-dismissible">
             <div class="d-flex justify-content-between">
                 <strong>Are you focusing?</strong>
-                <button type="button" class="btn btn-dark close" data-bs-dismiss="alert">Yes <i
+                <button type="button" class="btn btn-dark close" data-bs-dismiss="alert" @click="submitCheckInReflection(1)">Yes <i
                         class="bi bi-coin">+50</i> </button>
-                <button type="button" class="btn btn-dark close" data-bs-dismiss="alert">Sort of <i
+                <button type="submit" class="btn btn-dark close" data-bs-dismiss="alert" @click="submitCheckInReflection(0.67)">Sort of <i
                         class="bi bi-coin">+45</i></button>
-                <button type="button" class="btn btn-dark close" data-bs-dismiss="alert">No <i
+                <button type="submit" class="btn btn-dark close" data-bs-dismiss="alert" @click="submitCheckInReflection(0.33)">No <i
                         class="bi bi-coin">+40</i></button>
             </div>
             <br>

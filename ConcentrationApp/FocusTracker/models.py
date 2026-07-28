@@ -51,20 +51,18 @@ class OverallConcentrationEvaluation(models.Model):
 class CheckInEvaluation(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)
     timestamp=models.DateTimeField()
-    focusing=models.IntegerField(default=0)
-    sort_of_focusing=models.IntegerField(default=0)
-    not_focusing=models.IntegerField(default=0)
-    
+    focusing_value=models.FloatField(default=0)
+     
     def to_dict(self):
-                return {'id':self.id,'user':self.user.id,'timestamp':self.timestamp, 'focusing':self.focusing,'sort_of_focusing':self.sort_of_focusing, 'not_focusing':self.not_focusing}
+                return {'id':self.id,'user':self.user.id,'timestamp':self.timestamp, 'focusing_value':self.focusing_value}
     
 class DistractionsEvaluation(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)
     timestamp=models.DateTimeField()
-    zoning_out=models.IntegerField(default=0)
-    phone=models.IntegerField(default=0)
-    starting_other_tasks=models.IntegerField(default=0)
-    eating=models.IntegerField(default=0)
+    zoning_out=models.FloatField(default=0)
+    phone=models.FloatField(default=0)
+    starting_other_tasks=models.FloatField(default=0)
+    eating=models.FloatField(default=0)
     
     def to_dict(self):
                 return {'id':self.id,'user':self.user.id,'timestamp':self.timestamp, 'zoning_out':self.zoning_out,'phone':self.phone,'starting_other_tasks':self.starting_other_tasks,'eating':self.eating}

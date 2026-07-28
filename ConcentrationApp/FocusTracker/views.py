@@ -161,7 +161,7 @@ def overall_concentration_evaluation(request):
 def check_in_evaluation(request):
     if request.method=='POST':
         request_body=json.loads(request.body)
-        models.CheckInEvaluation.objects.create(user=request.user,timestamp=request_body['timestamp'],focusing=request_body['focusing'],sort_of_focusing=request_body['sort_of_focusing'],not_focusing=request_body['not_focusing'])
+        models.CheckInEvaluation.objects.create(user=request.user,timestamp=request_body['timestamp'],focusing_value=request_body['focusing_value'])
         return JsonResponse({'created':True})
     return JsonResponse([check_in_evaluation.to_dict() for evaluation in models.CheckInEvaluation.objects.filter(check_in_evaluation__user=request.user)],safe=False)
 
@@ -178,7 +178,7 @@ def last_task_progress(request):
     if request.method=='PUT':
         request_body=json.loads(request.body)
         object=models.LastTaskProgress.objects.get_or_create(id=request.GET.get('id'),defaults={'user':request.user,'red_task_id':request_body['red_task_id'],'amber_task_id':request_body['amber_task_id'],'improvement':['improvement']})
-        
+    return JsonResponse([last_task_progress.to_dict() for entry in models.LastTaskProgress.objects.filter(last_task_progress__user=request.user)],safe=False)    
         
 def register(request):
     register_form=forms.RegisterForm()
