@@ -7,6 +7,7 @@ import timer2 from '../assets/timerAlarmSounds/timer2.mp3'
 import timer3 from '../assets/timerAlarmSounds/timer3.mp3'
 import Tasks from './Tasks.vue'
 import TaskDate from './TaskDate.vue';
+import LastEvaluation from './LastEvaluation.vue';
 import '../assets/main.css'
 export default
     {
@@ -27,8 +28,22 @@ export default
                 overallConcentrationRating: '',
                 commonDistractionList: [{ id: 1, description: "Zoning out", checked: '' }, { id: 2, description: "Phone", checked: '' },
                 { id: 3, description: "Starting other tasks", checked: '' }, { id: 4, description: "Eating snacks", checked: '' }],
-                improvement: ''
+                improvement: '',
+                lastTaskProgress: [],
+                lastOverallEvaluation: [],
+                lastDistractions: [],
+                lastSessionExists: false,
+                showLastSession: false
             }
+        },
+        async mounted() {
+            console.log("Mounting now")
+            await this.getLastEvaluation()
+            console.log("Show last session", this.showLastSession)
+        },
+        components:
+        {
+            LastEvaluation
         },
         computed:
         {
@@ -89,19 +104,24 @@ export default
             clearTasksForToday() {
                 this.tasksForToday = []
             },
+            closeSelfReflectionModal() {
+                const selfReflectionModal = Modal.getOrCreateInstance(document.getElementById('selfReflectionModal'))
+                selfReflectionModal.hide()
+            },
             async submitReflection() {
-                this.studyTimerStore.toggleSelfReflectionModal()
+                this.closeSelfReflectionModal()
                 await this.submitOverallConcentrationReflection()
                 await this.submitDistractionsReflection()
                 await this.submitLastTasksReflection()
-                this.tasksForToday=[]
-                this.tasksForCurrentSession=[]
-                this.overallConcentrationRating=''
-                for(let i=0;i<this.commonDistractionList.length;i++)
-                {
-                    this.commonDistractionList[i].checked=''
+                this.tasksForToday = []
+                this.tasksForCurrentSession = []
+                this.overallConcentrationRating = ''
+                for (let i = 0; i < this.commonDistractionList.length; i++) {
+                    this.commonDistractionList[i].checked = ''
                 }
-                this.improvement=''
+                this.improvement = ''
+                await this.markSessionsAsExisting()
+                await this.getLastEvaluation()
             },
             async submitOverallConcentrationReflection() {
                 const response = await fetch("http://localhost:8000/overall_concentration_evaluation/",
@@ -160,7 +180,7 @@ export default
             async submitLastTasksReflection() {
                 const response = await fetch("http://localhost:8000/last_task_progress/",
                     {
-                        method: 'POST',
+                        method: 'PUT',
                         credentials: 'include',
                         headers: { 'X-CSRFToken': await this.getCsrfCookie() },
                         body: JSON.stringify({ 'timestamp': new Date(Date.now()).toISOString(), 'red_task_id': await this.identifyRedTaskToWorkOn(), 'amber_task_id': await this.identifyAmberTaskToWorkOn(), 'improvement': this.improvement })
@@ -170,6 +190,49 @@ export default
                     alert("An error occured submitting the form. Please try again later.")
                 }
             },
+            async getLastEvaluation() {
+                if (this.showLastSession != true) {
+                    await this.getLastSessionsExist()
+                    if (this.lastSessionExists == true) {
+                        await this.getLastOverallConcentrationRating()
+                        await this.getLastDistractions()
+                        await this.getLastTaskProgress()
+                        this.showLastSession = true
+                        console.log('showlastsession', this.showLastSession)
+                    }
+                }
+            },
+            async getLastTaskProgress() {
+                let response = await fetch("http://localhost:8000//last_task_progress/", { credentials: 'include' })
+                this.lastTaskProgress = await response.json()
+            },
+            async getLastOverallConcentrationRating() {
+                let response = await fetch("http://localhost:8000//overall_concentration_evaluation/", { credentials: 'include' })
+                this.lastOverallEvaluation = await response.json()
+            },
+            async getLastDistractions() {
+                let response = await fetch("http://localhost:8000//distractions_evaluation/", { credentials: 'include' })
+                this.lastDistractions = await response.json()
+                console.log(this.lastDistractions)
+            },
+            async getLastSessionsExist() {
+                let response = await fetch("http://localhost:8000//completed_sessions/", { credentials: 'include' })
+                response = await response.json()
+                this.lastSessionExists = response.lastSessionExists
+            },
+            async markSessionsAsExisting() {
+                let response = await fetch("http://localhost:8000/completed_sessions/",
+                    {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: { 'X-CSRFToken': await this.getCsrfCookie() },
+                        body: JSON.stringify({ 'completed': true })
+                    })
+                let created = await response.json()
+                if (created.created != true && created.created != false) {
+                    alert("An error occurred.")
+                }
+            }
         }
     }
 </script>
@@ -254,15 +317,18 @@ export default
             {{ studyTimerStore.minutes.toString().padStart(2, '0') }}:{{ studyTimerStore.seconds.toString().padStart(2,
                 '0') }}
         </div>
-        <div class="d-flex justify-content-center">
-            <button v-if="studyTimerStore.running" class="btn btn-secondary" type="button"
-                @click="studyTimerStore.pauseTimer">Pause</button>
-            <button v-else-if="studyTimerStore.sittingStarted" class="btn btn-secondary" type="button"
-                @click="studyTimerStore.startPomodoroTimer">Start</button>
-            <button v-else class="btn btn-secondary" type="button" data-bs-toggle="modal"
-                data-bs-target="#initialCheckInModal" @click="fetchTasksForToday()">Start</button>
-            <button class="btn btn-secondary ms-3" type="button" @click="studyTimerStore.resetTimer">Reset</button>
+        <div class="d-flex justify-content-center p-3" style="transform:scale(2.5)">
+            <button v-if="studyTimerStore.running" class="bi bi-pause-circle" type="button"
+                @click="studyTimerStore.pauseTimer"></button>
+            <button v-else-if="studyTimerStore.sittingStarted" class="bi bi-play-circle" type="button"
+                @click="studyTimerStore.startPomodoroTimer"></button>
+            <button v-else class="bi bi-play-circle" type="button" data-bs-toggle="modal"
+                data-bs-target="#initialCheckInModal" @click="fetchTasksForToday()"></button>
+            <button class="bi bi-bootstrap-reboot ms-3 vh-50 vw-50" type="button"
+                @click="studyTimerStore.resetTimer"></button>
         </div>
+        <LastEvaluation v-if="showLastSession" :last-task-progress="lastTaskProgress"
+            :last-overall-evaluation="lastOverallEvaluation" :last-distractions="lastDistractions"></LastEvaluation>
         <div class="modal fade" id="initialCheckInModal" role="dialog" aria-labelledby="initialCheckInModalLabel">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -276,7 +342,11 @@ export default
                                 <p>Select the task(s) you plan to work on during these {{ studyTimerStore.numSessionsSet
                                     }} sessions</p>
                                 <div class="form-check" v-for="task in tasksForToday" :key="task.id">
-                                    <input class="form-check-input" type="checkbox" :value="task"
+                                    <input
+                                        v-if="task.id == lastTaskProgress.red_task_id || task.id == lastTaskProgress.amber_task_id"
+                                        class="form-check-input" type="checkbox" :value="task"
+                                        v-model="tasksForCurrentSession" :id="'checkBox' + task.id" checked>
+                                    <input v-else class="form-check-input" type="checkbox" :value="task"
                                         v-model="tasksForCurrentSession" :id="'checkBox' + task.id">
                                     <label :for="'checkBox' + task.id" class="form-check-label"
                                         :id="'checkBox' + task.id">{{ task.task_name }}</label>
@@ -330,11 +400,6 @@ export default
                     </div>
                 </div>
             </div>
-        </div>
-        <div>
-            <h1>TEST ONLY - MODAL</h1>
-            <button type="button" class="btn btn-secondary" data-bs-toggle="modal"
-                data-bs-target="#selfReflectionModal">TEST</button>
         </div>
         <div class="modal fade" id="selfReflectionModal" role="dialog" aria-labelledby="selfReflectionModalLabel">
             <div class="modal-dialog" role="document">
@@ -461,8 +526,7 @@ export default
                             <div class="d-flex justify-content-center">
                                 <button v-if="this.improvement == ''" type="button" class="btn btn-success w-30 me-3"
                                     disabled>Done</button>
-                                <button v-else type="submit" class="btn btn-success w-30 me-3" data-bs-toggle="modal"
-                                    data-bs-target="#selfReflectionModal">Done</button>
+                                <button v-else type="submit" class="btn btn-success w-30 me-3">Done</button>
                                 <br>
                                 <button type="button" class="btn btn-secondary w-30"
                                     data-bs-dismiss="modal">Close</button>

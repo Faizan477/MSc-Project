@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Task,Subtask,Quote,OverallConcentrationEvaluation,CheckInEvaluation,DistractionsEvaluation,LastTaskProgress
+from .models import Task,Subtask,Quote,OverallConcentrationEvaluation,CheckInEvaluation,DistractionsEvaluation,LastTaskProgress,CompletedSession
 
 admin.site.register(Task)
 admin.site.register(Subtask)
@@ -8,3 +8,4 @@ admin.site.register(OverallConcentrationEvaluation)
 admin.site.register(CheckInEvaluation)
 admin.site.register(DistractionsEvaluation)
 admin.site.register(LastTaskProgress)
+admin.site.register(CompletedSession)

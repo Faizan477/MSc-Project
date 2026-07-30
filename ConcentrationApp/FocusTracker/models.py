@@ -65,7 +65,7 @@ class DistractionsEvaluation(models.Model):
     eating=models.FloatField(default=0)
     
     def to_dict(self):
-                return {'id':self.id,'user':self.user.id,'timestamp':self.timestamp, 'zoning_out':self.zoning_out,'phone':self.phone,'starting_other_tasks':self.starting_other_tasks,'eating':self.eating}
+        return {'id':self.id,'user':self.user.id,'timestamp':self.timestamp, 'zoning_out':self.zoning_out,'phone':self.phone,'starting_other_tasks':self.starting_other_tasks,'eating':self.eating}
 
 #needs PUT requests 
 class LastTaskProgress(models.Model):
@@ -75,4 +75,11 @@ class LastTaskProgress(models.Model):
     improvement=models.TextField()
     
     def to_dict(self):
-                return {'id':self.id,'user':self.user.id,'red_task_id':self.red_task_id, 'amber_task_id':self.amber_task_id,'improvement':self.improvement}
+        return {'id':self.id,'user':self.user.id,'red_task_id':self.red_task_id, 'amber_task_id':self.amber_task_id,'improvement':self.improvement}
+            
+class CompletedSession(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    completed=models.BooleanField(default=False)
+    
+    def to_dict(self):
+        return {'id':self.id,'user':self.user.id,'completed':self.completed}

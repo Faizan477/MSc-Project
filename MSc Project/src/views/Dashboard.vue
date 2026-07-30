@@ -14,7 +14,7 @@ export default{
 </script>
 <template>
         <div class="d-flex flex-column">
-            <h3 class="align-self-center">Command Centre</h3>
+            <h4 class="align-self-center">Command Centre</h4>
             <div class="d-flex justify-content-evenly">
                 <div class="h-100 w-25" id="tasks">
                     <Tasks />

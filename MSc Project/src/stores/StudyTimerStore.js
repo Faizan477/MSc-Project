@@ -130,7 +130,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         sound.play()
                     }
                     this.showSelfReflectionModal=true
-                    this.toggleSelfReflectionModal()
+                    this.openSelfReflectionModal()
                     if (this.shortBreak == true || this.longBreak == true) {
                         this.minutes = this.minutesSet
                         this.seconds = 0
@@ -145,7 +145,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     }
                     else if (this.currentSession < this.numSessionsSet) {
                         this.showSelfReflectionModal=true
-                        this.toggleSelfReflectionModal()
+                        this.openSelfReflectionModal()
                         if (this.currentSession % 4 == 0) {
                             this.longBreak = true
                             this.minutes = this.longBreakMinutesSet
@@ -162,7 +162,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     else {
                         //display cool congratulations animation
                         this.showSelfReflectionModal=true
-                        this.toggleSelfReflectionModal()
+                        this.openSelfReflectionModal()
                         this.sittingStarted=false
                         this.minutes = this.minutesSet
                         this.seconds = 0
@@ -196,10 +196,10 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     this.seconds = Math.trunc(((this.endTime - Date.now()) % 60000) / 1000)
                 }
             },
-            toggleSelfReflectionModal()
+            openSelfReflectionModal()
             {
                 const selfReflectionModal=Modal.getOrCreateInstance(document.getElementById('selfReflectionModal'))
-                selfReflectionModal.toggle()
+                selfReflectionModal.show()
             },
             updateProgressBar()
             {

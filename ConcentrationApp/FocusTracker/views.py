@@ -94,7 +94,7 @@ def subtask(request,id):
             if(subtask.id==id):
                 subtask.delete()
                 return JsonResponse({'deleted':True})
-            return JsonResponse({'deleted':False})
+        return JsonResponse({'deleted':False})
     elif request.method=='PUT':
         request_body=json.loads(request.body)
         for subtask in models.Subtask.objects.filter(task__user=request.user):
@@ -155,7 +155,11 @@ def overall_concentration_evaluation(request):
         request_body=json.loads(request.body)
         models.OverallConcentrationEvaluation.objects.create(user=request.user,timestamp=request_body['timestamp'],red=request_body['red'],amber=request_body['amber'],green=request_body['green'])
         return JsonResponse({'created':True})
-    return JsonResponse([evaluation.to_dict() for evaluation in models.OverallConcentrationEvaluation.objects.filter(overall_concentration_evaluation__user=request.user)],safe=False)
+    return JsonResponse([evaluation.to_dict() for evaluation in models.OverallConcentrationEvaluation.objects.filter(user=request.user).order_by('-timestamp')[:1]],safe=False)
+
+@login_required
+def overall_concentration_evaluation_graph(request):
+    return JsonResponse([evaluation.to_dict() for evaluation in models.OverallConcentrationEvaluation.objects.filter(user=request.user).order_by('-timestamp')[:1]],safe=False)
 
 @login_required
 def check_in_evaluation(request):
@@ -163,7 +167,7 @@ def check_in_evaluation(request):
         request_body=json.loads(request.body)
         models.CheckInEvaluation.objects.create(user=request.user,timestamp=request_body['timestamp'],focusing_value=request_body['focusing_value'])
         return JsonResponse({'created':True})
-    return JsonResponse([check_in_evaluation.to_dict() for evaluation in models.CheckInEvaluation.objects.filter(check_in_evaluation__user=request.user)],safe=False)
+    return JsonResponse([evaluation.to_dict() for evaluation in models.CheckInEvaluation.objects.filter(user=request.user).order_by('-timestamp')[:1]],safe=False)
 
 @login_required
 def distractions_evaluation(request):
@@ -171,14 +175,30 @@ def distractions_evaluation(request):
         request_body=json.loads(request.body)
         models.DistractionsEvaluation.objects.create(user=request.user,timestamp=request_body['timestamp'],zoning_out=request_body['zoning_out'],phone=request_body['phone'],starting_other_tasks=request_body['starting_other_tasks'],eating=request_body['eating'])
         return JsonResponse({'created':True})
-    return JsonResponse([distractions_evaluation.to_dict() for evaluation in models.DistractionsEvaluation.objects.filter(distractions_evaluation__user=request.user)],safe=False)
+    return JsonResponse([evaluation.to_dict() for evaluation in models.DistractionsEvaluation.objects.filter(user=request.user).order_by('-timestamp')[:1]],safe=False)
 
 @login_required
 def last_task_progress(request):
     if request.method=='PUT':
         request_body=json.loads(request.body)
-        object=models.LastTaskProgress.objects.get_or_create(id=request.GET.get('id'),defaults={'user':request.user,'red_task_id':request_body['red_task_id'],'amber_task_id':request_body['amber_task_id'],'improvement':['improvement']})
-    return JsonResponse([last_task_progress.to_dict() for entry in models.LastTaskProgress.objects.filter(last_task_progress__user=request.user)],safe=False)    
+        models.LastTaskProgress.objects.update_or_create(id=request.user.id,defaults={'id':request.user.id,'user':request.user,'red_task_id':request_body['red_task_id'],'amber_task_id':request_body['amber_task_id'],'improvement':request_body['improvement']})
+        return JsonResponse({'created':True})
+    return JsonResponse([entry.to_dict() for entry in models.LastTaskProgress.objects.filter(user=request.user)],safe=False)    
+
+@login_required
+def completed_sessions(request):
+    if request.method=='PUT':
+        request_body=json.loads(request.body)
+        if(models.CompletedSession.objects.filter(user=request.user).count()==0):
+            models.CompletedSession.objects.create(user=request.user,completed=request_body['completed'])
+            return JsonResponse({'created':True})
+        else:
+            return JsonResponse({'created':False})
+    elif request.method=='GET':
+        if(models.CompletedSession.objects.filter(user=request.user).count()==0):
+            return JsonResponse({'lastSessionExists':False})
+        else:
+            return JsonResponse({'lastSessionExists':True})
         
 def register(request):
     register_form=forms.RegisterForm()
