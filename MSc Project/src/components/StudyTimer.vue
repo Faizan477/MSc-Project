@@ -33,13 +33,14 @@ export default
                 lastOverallEvaluation: [],
                 lastDistractions: [],
                 lastSessionExists: false,
-                showLastSession: false
+                showLastSession: false,
+                preSelectionsMade:false
             }
         },
         async mounted() {
             console.log("Mounting now")
             await this.getLastEvaluation()
-            console.log("Show last session", this.showLastSession)
+
         },
         components:
         {
@@ -99,7 +100,17 @@ export default
                 let date = encodeURIComponent(this.convertToDate(Date.now()))
                 let response = await fetch("http://localhost:8000/task_list/?date=" + date, { credentials: 'include' })
                 let tasksForToday = await response.json()
-                this.tasksForToday = tasksForToday.filter(this.filterIncompleteTasks)
+                this.tasksForToday = await tasksForToday.filter(this.filterIncompleteTasks)
+                await this.getLastEvaluation()
+                for(let i=0;i<this.tasksForToday.length;i++)
+                {
+                    if((this.tasksForToday[i].id==this.lastTaskProgress[0].red_task_id) || (this.tasksForToday[i].id==this.lastTaskProgress[0].amber_task_id))
+                    {
+                        this.preSelectionsMade=true
+                        this.tasksForCurrentSession.push(this.tasksForToday[i])
+                    }
+                    this.preSelectionsMade=false
+                }
             },
             clearTasksForToday() {
                 this.tasksForToday = []
@@ -341,12 +352,9 @@ export default
                             <div v-if="tasksForToday.length != 0">
                                 <p>Select the task(s) you plan to work on during these {{ studyTimerStore.numSessionsSet
                                     }} sessions</p>
+                                <i v-if="preSelectionsMade">We have pre-selected suggested tasks based on your last self-reflection.</i>
                                 <div class="form-check" v-for="task in tasksForToday" :key="task.id">
-                                    <input
-                                        v-if="task.id == lastTaskProgress.red_task_id || task.id == lastTaskProgress.amber_task_id"
-                                        class="form-check-input" type="checkbox" :value="task"
-                                        v-model="tasksForCurrentSession" :id="'checkBox' + task.id" checked>
-                                    <input v-else class="form-check-input" type="checkbox" :value="task"
+                                    <input class="form-check-input" type="checkbox" :value="task"
                                         v-model="tasksForCurrentSession" :id="'checkBox' + task.id">
                                     <label :for="'checkBox' + task.id" class="form-check-label"
                                         :id="'checkBox' + task.id">{{ task.task_name }}</label>

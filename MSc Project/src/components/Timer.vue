@@ -1,12 +1,25 @@
 <script>
 import { useStudyTimerStore } from '../stores/StudyTimerStore.js';
+import { useFiveMinuteTimerStore } from '../stores/FiveMinuteTimerStore.js';
 import { mapStores } from 'pinia'
 import FiveMinuteTimer from './FiveMinuteTimer.vue'
 import StudyTimer from './StudyTimer.vue'
 export default
     {
         data() {
-            return { standardTimer: false }
+            return {
+                standardTimer: false,
+                showInterventions: true,
+                breathingExercise: false,
+                breathingMinutes: 2,
+                breathingSeconds: 0,
+                breathingTimerInterval: '',
+                breathingTimerRunning: false,
+                breathingStartTime: 0,
+                breathingEndTime: 0,
+                inhale: true,
+                showPrompt: false
+            }
         },
         components:
         {
@@ -34,18 +47,67 @@ export default
                     this.standardTimer = true
                 }
             },
-            async submitCheckInReflection(value)
-            {
+            async submitCheckInReflection(value) {
                 const response = await fetch("http://localhost:8000/check_in_evaluation/",
                     {
                         method: 'POST',
                         credentials: 'include',
                         headers: { 'X-CSRFToken': await this.getCsrfCookie() },
-                        body: JSON.stringify({ 'timestamp': new Date(Date.now()).toISOString(), 'focusing_value':value })
+                        body: JSON.stringify({ 'timestamp': new Date(Date.now()).toISOString(), 'focusing_value': value })
                     })
                 let created = await response.json()
                 if (created.created != true) {
                     alert("An error occured saving the check-in.")
+                }
+                if (value <= 0.67) {
+                    this.showInterventions = true
+                }
+            },
+            startBreathingExercise() {
+                this.breathingExercise = true
+                this.showPrompt = false
+                this.showInterventions = true
+                const fiveMinuteStore = useFiveMinuteTimerStore()
+                if (this.studyTimerStore.running) {
+                    this.studyTimerStore.pauseTimer()
+                }
+                else if (fiveMinuteStore.fiveMinuteRunning) {
+                    this.fiveMinuteTimerStore.pauseTimer()
+                }
+                this.startBreathingTimer()
+            },
+            startBreathingTimer() {
+                this.breathingStartTime = Date.now()
+                this.breathingEndTime = this.breathingStartTime + 120000
+                this.breathingTimerRunning = true
+                this.breathingTimerInterval = setInterval(() => { this.updateBreathingTimer() }, 200)
+            },
+            async updateBreathingTimer() {
+                if (this.breathingEndTime - Date.now() <= 0) {
+                    this.stopBreathingTimer()
+                    this.showPrompt = true
+                }
+                else {
+                    if (((this.breathingMinutes * 60) + (this.breathingSeconds)) % 3 == 0) {
+                        this.toggleBreathingStyle()
+                    }
+                    this.breathingMinutes = Math.trunc(((this.breathingEndTime - Date.now()) / 60000))
+                    this.breathingSeconds = Math.trunc(((this.breathingEndTime - Date.now()) % 60000) / 1000)
+                }
+            },
+            stopBreathingTimer() {
+                this.breathingExercise = false
+                this.breathingTimerRunning = false
+                clearInterval(this.breathingTimerInterval)
+                this.breathingMinutes = 2
+                this.breathingSeconds = 0
+            },
+            toggleBreathingStyle() {
+                if (this.inhale == false) {
+                    this.inhale = true
+                }
+                else if (this.inhale == true) {
+                    this.inhale = false
                 }
             }
         }
@@ -54,21 +116,42 @@ export default
 <template>
     <div class="d-flex flex-column align-items-center">
         <h4 class="align-self-start">Start a session</h4>
-        <div v-if="studyTimerStore.showCheckIn" class="alert alert-info w-100 alert-dismissible">
+        <div v-if="studyTimerStore.showCheckIn" class="alert alert-secondary w-100 alert-dismissible">
             <div class="d-flex justify-content-between">
                 <strong>Are you focusing?</strong>
-                <button type="button" class="btn btn-dark close" data-bs-dismiss="alert" @click="submitCheckInReflection(1)">Yes <i
-                        class="bi bi-coin">+50</i> </button>
-                <button type="submit" class="btn btn-dark close" data-bs-dismiss="alert" @click="submitCheckInReflection(0.67)">Sort of <i
-                        class="bi bi-coin">+45</i></button>
-                <button type="submit" class="btn btn-dark close" data-bs-dismiss="alert" @click="submitCheckInReflection(0.33)">No <i
-                        class="bi bi-coin">+40</i></button>
+                <button type="button" class="btn btn-dark close" data-bs-dismiss="alert"
+                    @click="submitCheckInReflection(1)">Yes <i class="bi bi-coin">+50</i> </button>
+                <button type="submit" class="btn btn-dark close" data-bs-dismiss="alert"
+                    @click="submitCheckInReflection(0.67)">Sort of <i class="bi bi-coin">+45</i></button>
+                <button type="submit" class="btn btn-dark close" data-bs-dismiss="alert"
+                    @click="submitCheckInReflection(0.33)">No <i class="bi bi-coin">+40</i></button>
             </div>
             <br>
             <div class="progress">
-                <div class="progress-bar bg-danger" role="progressbar" :style="{ width: studyTimerStore.percentageProgressCheckIn + '%' }"></div>
+                <div class="progress-bar bg-danger" role="progressbar"
+                    :style="{ width: studyTimerStore.percentageProgressCheckIn + '%' }"></div>
             </div>
         </div>
+        <div v-if="showInterventions" class="alert alert-secondary w-100 alert-dismissible d-flex flex-column">
+            <div v-if="breathingExercise!=true" class="d-flex justify-content-between">
+                <strong>Do you want to try any of these?</strong>
+                <button type="button" class="btn btn-dark" @click="startBreathingExercise()">Breathing exercise</button>
+                <button type="button" class="btn btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div v-else class="d-flex flex-column align-items-center">
+                <button type="button" class="btn btn-close" data-bs-dismiss="alert"
+                    @click="stopBreathingTimer()"></button>
+                <div class="fs-3">
+                    {{ this.breathingMinutes.toString().padStart(2, '0') }}:{{
+                        this.breathingSeconds.toString().padStart(2,
+                    '0') }}
+                </div>
+                <h5 v-if="inhale">Inhale</h5>
+                <h5 v-else>Exhale</h5>
+                <p v-if="showPrompt">Nice! You can now close this pop-up and resume the timer!</p>
+            </div>
+        </div>
+
         <div v-if="standardTimer" class="d-flex justify-content-center">
             <button type="button" class="btn btn-secondary nav-link me-5"
                 @click="handle5MinuteTimerToggleButton">5-minute timer</button>

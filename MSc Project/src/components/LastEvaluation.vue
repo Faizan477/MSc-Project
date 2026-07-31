@@ -6,7 +6,6 @@ export default
         props: ['lastTaskProgress', 'lastOverallEvaluation', 'lastDistractions'],
         methods:
         {
-
         },
         mounted() {
         }
