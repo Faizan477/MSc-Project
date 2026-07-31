@@ -42,12 +42,6 @@
                                 <router-link class="nav-link text-light" to="/">Command Centre</router-link>
                             </li>
                             <li class="nav-item">
-                                <router-link class="nav-link text-light" to="/account">Account</router-link>
-                            </li>
-                            <li class="nav-item">
-                                <router-link class="nav-link text-light" to="/settings">Settings</router-link>
-                            </li>
-                            <li class="nav-item">
                                 <router-link class="nav-link text-light" to="/statistics">Statistics</router-link>
                             </li>
                             <li class="nav-item">

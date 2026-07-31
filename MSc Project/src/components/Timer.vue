@@ -9,7 +9,7 @@ export default
         data() {
             return {
                 standardTimer: false,
-                showInterventions: true,
+                showInterventions: false,
                 breathingExercise: false,
                 breathingMinutes: 2,
                 breathingSeconds: 0,
@@ -17,6 +17,7 @@ export default
                 breathingTimerRunning: false,
                 breathingStartTime: 0,
                 breathingEndTime: 0,
+                lastToggledSecond:0,
                 inhale: true,
                 showPrompt: false
             }
@@ -80,7 +81,7 @@ export default
                 this.breathingStartTime = Date.now()
                 this.breathingEndTime = this.breathingStartTime + 120000
                 this.breathingTimerRunning = true
-                this.breathingTimerInterval = setInterval(() => { this.updateBreathingTimer() }, 200)
+                this.breathingTimerInterval = setInterval(() => { this.updateBreathingTimer() }, 100)
             },
             async updateBreathingTimer() {
                 if (this.breathingEndTime - Date.now() <= 0) {
@@ -89,7 +90,11 @@ export default
                 }
                 else {
                     if (((this.breathingMinutes * 60) + (this.breathingSeconds)) % 3 == 0) {
-                        this.toggleBreathingStyle()
+                        if(this.lastToggledSecond!=this.breathingSeconds)
+                        {
+                            this.lastToggledSecond=this.breathingSeconds
+                            this.toggleBreathingStyle()
+                        }
                     }
                     this.breathingMinutes = Math.trunc(((this.breathingEndTime - Date.now()) / 60000))
                     this.breathingSeconds = Math.trunc(((this.breathingEndTime - Date.now()) % 60000) / 1000)
@@ -133,9 +138,13 @@ export default
             </div>
         </div>
         <div v-if="showInterventions" class="alert alert-secondary w-100 alert-dismissible d-flex flex-column">
-            <div v-if="breathingExercise!=true" class="d-flex justify-content-between">
-                <strong>Do you want to try any of these?</strong>
-                <button type="button" class="btn btn-dark" @click="startBreathingExercise()">Breathing exercise</button>
+            <div v-if="breathingExercise!=true && showPrompt!=true" class="d-flex justify-content-between">
+                <strong>Would you like to try a short exercise to help you focus?</strong>
+                <button type="button" class="btn btn-dark" @click="startBreathingExercise()">Start Breathing exercise</button>
+                <button type="button" class="btn btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div v-if="breathingExercise!=true && showPrompt==true">
+                <p v-if="showPrompt">Nice! You can now close this pop-up and resume the timer!</p>
                 <button type="button" class="btn btn-close" data-bs-dismiss="alert"></button>
             </div>
             <div v-else class="d-flex flex-column align-items-center">
@@ -148,7 +157,6 @@ export default
                 </div>
                 <h5 v-if="inhale">Inhale</h5>
                 <h5 v-else>Exhale</h5>
-                <p v-if="showPrompt">Nice! You can now close this pop-up and resume the timer!</p>
             </div>
         </div>
 

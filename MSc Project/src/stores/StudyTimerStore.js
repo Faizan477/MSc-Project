@@ -129,9 +129,8 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         let sound = new Howl({ src: [timer3] })
                         sound.play()
                     }
-                    this.showSelfReflectionModal=true
-                    this.openSelfReflectionModal()
                     if (this.shortBreak == true || this.longBreak == true) {
+                        this.determineCheckInIntervals()
                         this.minutes = this.minutesSet
                         this.seconds = 0
                         if (this.shortBreak == true) {
@@ -144,8 +143,6 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         }
                     }
                     else if (this.currentSession < this.numSessionsSet) {
-                        this.showSelfReflectionModal=true
-                        this.openSelfReflectionModal()
                         if (this.currentSession % 4 == 0) {
                             this.longBreak = true
                             this.minutes = this.longBreakMinutesSet
@@ -160,6 +157,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         }
                     }
                     else {
+                        this.showCheckIn=false
                         //display cool congratulations animation
                         this.showSelfReflectionModal=true
                         this.openSelfReflectionModal()
@@ -263,5 +261,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                 }
             },
             percentageProgress: (state) => (state.millisecondsGone / (state.minutesSet * 60000)) * 100,
+            shortBreakPercentageProgress:(state)=>(state.millisecondsGone/(state.shortBreakMinutesSet*60000)) *100,
+            longBreakPercentageProgress:(state)=>(state.millisecondsGone/(state.longBreakMinutesSet*60000)) *100
         }
     })

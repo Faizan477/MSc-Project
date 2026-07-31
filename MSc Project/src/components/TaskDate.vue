@@ -8,6 +8,8 @@ export default
                 editedName: '',
                 editedDescription: '',
                 rescheduleTo: '',
+                subtaskEditedName: '',
+                subtaskEditedDescription: '',
                 listOfTasks: [],
                 listOfSubtasks: [],
                 progress: 0
@@ -145,7 +147,7 @@ export default
                         method: 'PUT',
                         credentials: 'include',
                         headers: { 'X-CSRFToken': await this.getCsrfCookie() },
-                        body: JSON.stringify({ 'subtaskName': this.editedName, 'subtaskDescription': this.editedDescription, 'completed': task.completed })
+                        body: JSON.stringify({ 'subtaskName': this.subtaskEditedName, 'subtaskDescription': this.subtaskEditedDescription, 'completed': subtask.completed })
                     })
                 let subtaskEdited = await response.json()
                 if (subtaskEdited.edited != true) {
@@ -215,6 +217,10 @@ export default
                 this.editedName = task.task_name
                 this.editedDescription = task.description
                 this.rescheduleTo = task.scheduled_date
+            },
+            fetchSubtaskInfo(subtask) {
+                this.subtaskEditedName = subtask.subtask_name
+                this.subtaskEditedDescription = subtask.description
             }
         }
     }
@@ -264,9 +270,9 @@ export default
             <div v-for="task in listOfTasks" class="accordion-item bg-secondary-subtle" :key="task.id">
                 <div class="accordion-header" :id="'header' + task.id">
                     {{ task.task_name }}
-                        <div class="me-auto">
-                            {{ task.description }}
-                        </div>
+                    <div class="me-auto">
+                        {{ task.description }}
+                    </div>
                     <div id="buttonGroup" class="d-flex justify-content-end">
                         <button type="button" class="bi bi-pencil me-2" data-bs-toggle="modal"
                             :data-bs-target="'#editTaskModal' + task.id" @click="fetchTaskInfo(task)"></button>
@@ -295,8 +301,7 @@ export default
                                         {{ subtask.description }}
                                     </div>
                                     <button type="button" class="bi bi-pencil me-2" data-bs-toggle="modal"
-                                        data-bs-target="#editTaskModal" @click="fetchTaskInfo(task)"></button>
-
+                                        :data-bs-target="'#editSubtaskModal'+subtask.id" @click="fetchSubtaskInfo(subtask)"></button>
                                     <button type="button" class="bi bi-trash"
                                         @click="deleteSubtask(subtask.id)"></button>
                                     <button v-if="subtask.completed" type="button"
@@ -306,6 +311,39 @@ export default
                                         @click="completeSubtask(subtask.id)"></button>
                                 </div>
                             </h6>
+                            <div class="modal fade" :id="'editSubtaskModal' + subtask.id" role="dialog"
+                                aria-labelledby="editSubtaskModalLabel">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title" id="editSubtaskModalLabel">Edit subtask</h4>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form @submit.prevent="editSubtask(subtask)"
+                                                class="d-flex flex-column align-items-center">
+                                                <label for="editedSubtaskName">Subtask Name</label>
+                                                <input type="text" id="editedSubtaskName" class="w-100"
+                                                    v-model="subtaskEditedName" required>
+                                                <label for="subtaskEditedDescription">Description</label>
+                                                <input type="text" id="subtaskEditedDescription" class="w-100"
+                                                    v-model="subtaskEditedDescription">
+                                                <div class="d-flex justify-content-center mt-3">
+                                                    <button v-if="this.subtaskEditedName == ''" type="button"
+                                                        class="btn btn-success w-30 me-3" disabled>Done</button>
+                                                    <button v-else type="submit" class="btn btn-success w-30 me-3"
+                                                        data-bs-toggle="modal"
+                                                        :data-bs-target="'#editSubtaskModal' + subtask.id">Done</button>
+                                                    <br>
+                                                    <button type="button" class="btn btn-secondary w-30"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -366,7 +404,7 @@ export default
                                             <button v-if="task.subtaskName == ''" type="submit"
                                                 class="btn btn-success w-30 me-3" disabled>Done</button>
                                             <button v-else type="submit" class="btn btn-success w-30 me-3"
-                                                data-bs-dismiss="modal" >Done</button>
+                                                data-bs-dismiss="modal">Done</button>
                                             <button type="button" class="btn btn-secondary w-30 me-3"
                                                 data-bs-dismiss="modal">Close</button>
                                         </div>

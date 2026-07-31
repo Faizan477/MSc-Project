@@ -24,7 +24,7 @@ export default
                 numCheckIns: 5,
                 randomIntervals: false,
                 showCheckIn: false,
-                selfReflectionModal: false,
+                refreshEvaluation: false,
                 overallConcentrationRating: '',
                 commonDistractionList: [{ id: 1, description: "Zoning out", checked: '' }, { id: 2, description: "Phone", checked: '' },
                 { id: 3, description: "Starting other tasks", checked: '' }, { id: 4, description: "Eating snacks", checked: '' }],
@@ -34,13 +34,19 @@ export default
                 lastDistractions: [],
                 lastSessionExists: false,
                 showLastSession: false,
-                preSelectionsMade:false
+                preSelectionsMade: false
             }
         },
         async mounted() {
             console.log("Mounting now")
             await this.getLastEvaluation()
 
+        },
+        watch:
+        {
+            async refreshEvaluation() {
+                await this.getLastEvaluation()
+            }
         },
         components:
         {
@@ -102,14 +108,12 @@ export default
                 let tasksForToday = await response.json()
                 this.tasksForToday = await tasksForToday.filter(this.filterIncompleteTasks)
                 await this.getLastEvaluation()
-                for(let i=0;i<this.tasksForToday.length;i++)
-                {
-                    if((this.tasksForToday[i].id==this.lastTaskProgress[0].red_task_id) || (this.tasksForToday[i].id==this.lastTaskProgress[0].amber_task_id))
-                    {
-                        this.preSelectionsMade=true
+                for (let i = 0; i < this.tasksForToday.length; i++) {
+                    if ((this.tasksForToday[i].id == this.lastTaskProgress[0].red_task_id) || (this.tasksForToday[i].id == this.lastTaskProgress[0].amber_task_id)) {
+                        this.preSelectionsMade = true
                         this.tasksForCurrentSession.push(this.tasksForToday[i])
                     }
-                    this.preSelectionsMade=false
+                    this.preSelectionsMade = false
                 }
             },
             clearTasksForToday() {
@@ -124,6 +128,7 @@ export default
                 await this.submitOverallConcentrationReflection()
                 await this.submitDistractionsReflection()
                 await this.submitLastTasksReflection()
+                this.refreshEvaluation = true
                 this.tasksForToday = []
                 this.tasksForCurrentSession = []
                 this.overallConcentrationRating = ''
@@ -133,6 +138,7 @@ export default
                 this.improvement = ''
                 await this.markSessionsAsExisting()
                 await this.getLastEvaluation()
+                this.refreshEvaluation = false //have to change to true than false again to ensure that the state property changes to trigger the watcher
             },
             async submitOverallConcentrationReflection() {
                 const response = await fetch("http://localhost:8000/overall_concentration_evaluation/",
@@ -250,7 +256,15 @@ export default
 <template class="w-100 h-100">
     <div class="d-flex flex-column align-items-center w-100 h-100">
         <div class="progress w-100">
-            <div class="progress-bar progress-bar-striped bg-success" role="progressbar"
+            <div v-if="studyTimerStore.shortBreak" class="progress-bar progress-bar-striped bg-info" role="progressbar"
+                :style="{ width: studyTimerStore.shortBreakPercentageProgress + '%' }"
+                :aria-valuenow="studyTimerStore.millisecondsGone" :aria-valuemin="0"
+                :aria-valuemax="(studyTimerStore.shortBreakMinutesSet) * 60000"></div>
+            <div v-else-if="studyTimerStore.longBreak" class="progress-bar progress-bar-striped bg-info" role="progressbar"
+                :style="{ width: studyTimerStore.longBreakPercentageProgress + '%' }"
+                :aria-valuenow="studyTimerStore.millisecondsGone" :aria-valuemin="0"
+                :aria-valuemax="(studyTimerStore.longBreakMinutesSet) * 60000"></div>
+            <div v-else class="progress-bar progress-bar-striped bg-success" role="progressbar"
                 :style="{ width: studyTimerStore.percentageProgress + '%' }"
                 :aria-valuenow="studyTimerStore.millisecondsGone" :aria-valuemin="0"
                 :aria-valuemax="(studyTimerStore.minutesSet) * 60000"></div>
@@ -258,9 +272,8 @@ export default
         <br>
         <p v-if="!(studyTimerStore.longBreak || studyTimerStore.shortBreak)">Session {{ studyTimerStore.currentSession
         }} of {{ studyTimerStore.numSessionsSet }} </p>
-        <p v-else-if="studyTimerStore.longBreak">Long break {{ studyTimerStore.currentLongBreak }} of {{
-            Math.floor(studyTimerStore.numSessionsSet / 4) }}</p>
-        <p v-else>Short break {{ studyTimerStore.currentShortBreak }} of {{ }}</p>
+        <p v-else-if="studyTimerStore.longBreak">Long break</p>
+        <p v-else>Short break</p>
         <button v-show="!(studyTimerStore.running || studyTimerStore.paused)" class="bi bi-gear"
             style="transform:scale(2.5);" data-bs-toggle="modal" data-bs-target="#timerSettingsModal"></button>
         <div class="modal fade" id="timerSettingsModal" role="dialog" aria-labelledby="timerSettingsModalLabel">
@@ -273,7 +286,6 @@ export default
                     <div class="modal-body">
                         <form @submit.prevent="setValidTimerSettings()" class="d-flex flex-column align-items-center">
                             <p>Total productive time: {{ minutesSet * numSessionsSet }} minutes </p>
-                            <p>Total time (including breaks)</p>
                             <label for="sessionLength">Session length (minutes) How long do you want to work in one
                                 sitting before a short break?</label>
                             <input type="number" id="sessionLength" class="w-100" v-model="minutesSet" min="5" max="120"
@@ -292,19 +304,33 @@ export default
                             <input type="number" id="numSessions" class="w-100" v-model="numSessionsSet" min="1"
                                 max="100" placeholder="Please enter a value between 1 and 100" maxlength="3">
                             <p>Timer Ping sound (plays when the time is up)</p>
-                            <div class="d-flex justify-content-around">
-                                <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value='timer1' id="1">
-                                <label for="1" class="me-3">Ding</label>
-                                <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value='timer2' id="2">
-                                <label for="2" class="me-3">Two-tone chime</label>
-                                <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value='timer3' id="3">
-                                <label for="3">Chime</label>
+                            <div class="row w-100">
+                                <div class="col">
+                                    <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value='timer1'
+                                        id="1">
+                                    <label for="1" class="me-3">Ding</label>
+                                </div>
+                                <div class="col">
+                                    <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value='timer2'
+                                        id="2">
+                                    <label for="2" class="me-3">2-tone chime</label>
+                                </div>
+                                <div class="col">
+                                    <input type="radio" v-model="timerAlarmSound" name="timerAlarm" value='timer3'
+                                        id="3">
+                                    <label for="3">Chime</label>
+                                </div>
                             </div>
-
-                            <div class="d-flex justify-content-evenly">
-                                <button class="bi bi-play-circle-fill me-5" @click="playTrialSound1"></button>
-                                <button class="bi bi-play-circle-fill me-5" @click="playTrialSound2"></button>
-                                <button class="bi bi-play-circle-fill" @click="playTrialSound3"></button>
+                            <div class="row w-100">
+                                <div class="col">
+                                    <button class="bi bi-play-circle-fill me-5" @click="playTrialSound1"></button>
+                                </div>
+                                <div class="col">
+                                    <button class="bi bi-play-circle-fill me-5" @click="playTrialSound2"></button>
+                                </div>
+                                <div class="col">
+                                    <button class="bi bi-play-circle-fill" @click="playTrialSound3"></button>
+                                </div>
                             </div>
                             <br>
                             <div class="d-flex justify-content-center">
@@ -352,7 +378,8 @@ export default
                             <div v-if="tasksForToday.length != 0">
                                 <p>Select the task(s) you plan to work on during these {{ studyTimerStore.numSessionsSet
                                     }} sessions</p>
-                                <i v-if="preSelectionsMade">We have pre-selected suggested tasks based on your last self-reflection.</i>
+                                <i v-if="preSelectionsMade">We have pre-selected suggested tasks based on your last
+                                    self-reflection.</i>
                                 <div class="form-check" v-for="task in tasksForToday" :key="task.id">
                                     <input class="form-check-input" type="checkbox" :value="task"
                                         v-model="tasksForCurrentSession" :id="'checkBox' + task.id">
