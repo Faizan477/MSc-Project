@@ -125,11 +125,11 @@ export default
             <div class="d-flex justify-content-between">
                 <strong>Are you focusing?</strong>
                 <button type="button" class="btn btn-dark close" data-bs-dismiss="alert"
-                    @click="submitCheckInReflection(1)">Yes <i class="bi bi-coin">+50</i> </button>
-                <button type="submit" class="btn btn-dark close" data-bs-dismiss="alert"
-                    @click="submitCheckInReflection(0.67)">Sort of <i class="bi bi-coin">+45</i></button>
-                <button type="submit" class="btn btn-dark close" data-bs-dismiss="alert"
-                    @click="submitCheckInReflection(0.33)">No <i class="bi bi-coin">+40</i></button>
+                    @click="submitCheckInReflection(1)">Yes </button>
+                <button type="submit" class="btn btn-dark close"
+                    @click="submitCheckInReflection(0.67)" data-bs-dismiss="alert">Sort of</button>
+                <button type="submit" class="btn btn-dark close"
+                    @click="submitCheckInReflection(0.33)" data-bs-dismiss="alert">No</button>
             </div>
             <br>
             <div class="progress">

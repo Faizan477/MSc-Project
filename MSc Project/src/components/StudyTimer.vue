@@ -68,7 +68,7 @@ export default
                 this.studyTimerStore.minutesSet = this.minutesSet
                 this.studyTimerStore.shortBreakMinutesSet = this.shortBreakMinutesSet
                 this.studyTimerStore.longBreakMinutesSet = this.longBreakMinutesSet
-                this.studyTimerStore.numSessionsSet = this.numSessionsSet
+                this.studyTimerStore.numSessionsSet = Number(this.numSessionsSet)
                 this.studyTimerStore.timerAlarmSound = this.timerAlarmSound
 
                 this.studyTimerStore.resetTimer()
@@ -113,7 +113,6 @@ export default
                         this.preSelectionsMade = true
                         this.tasksForCurrentSession.push(this.tasksForToday[i])
                     }
-                    this.preSelectionsMade = false
                 }
             },
             clearTasksForToday() {

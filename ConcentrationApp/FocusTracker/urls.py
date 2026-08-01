@@ -16,9 +16,11 @@ urlpatterns=[
     path('quote/<int:id>/',views.quote,name='quote'),
     path('quote_list/',views.quote_list,name='quote_list'),
     path('overall_concentration_evaluation/',views.overall_concentration_evaluation,name='overall_concentration_evaluation'),
-    path('overall_concentration_evaluation_graph',views.overall_concentration_evaluation_graph,name='overall_concentration_evaluation_graph'),
+    path('overall_concentration_evaluation_graph/',views.overall_concentration_evaluation_graph,name='overall_concentration_evaluation_graph'),
     path('check_in_evaluation/',views.check_in_evaluation,name='check_in_evaluation'),
     path('distractions_evaluation/',views.distractions_evaluation,name='distractions_evaluation'),
+    path('distractions_evaluation_graph/',views.distractions_evaluation_graph,name='distractions_evaluation_graph'),
     path('last_task_progress/',views.last_task_progress,name='last_task_progress'),
-    path('completed_sessions/',views.completed_sessions,name='completed_sessions')
+    path('completed_sessions/',views.completed_sessions,name='completed_sessions'),
+    path('user_time_spent/',views.user_time_spent,name='user_time_spent'),
 ]

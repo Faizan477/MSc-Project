@@ -20,30 +20,29 @@ export const useStudyTimerStore = defineStore('studyTimer',
                 running: false,
                 startTime: 0,
                 endTime: 0,
-                checkInEndTime:0,
+                checkInEndTime: 0,
                 currentSession: 1,
                 currentShortBreak: 1,
                 currentLongBreak: 1,
                 shortBreak: false,
                 longBreak: false,
                 timerAlarmSound: 'timer1',
-                numCheckIns:5,
-                randomIntervals:false,
-                sittingStarted:false,
-                tasksForCurrentSession:[],
-                checkInSound:true,
-                intervals:[],
-                showCheckIn:false,
-                showSelfReflectionModal:false,
-                checkInStartTime:0,
-                millisecondsLeftCheckIn:0,
-                percentageProgressCheckIn:100
+                numCheckIns: 5,
+                randomIntervals: false,
+                sittingStarted: false,
+                tasksForCurrentSession: [],
+                checkInSound: true,
+                intervals: [],
+                showCheckIn: false,
+                showSelfReflectionModal: false,
+                checkInStartTime: 0,
+                millisecondsLeftCheckIn: 0,
+                percentageProgressCheckIn: 100
             }
         },
         actions: {
             otherTimerRunning() {
                 const fiveMinuteStore = useFiveMinuteTimerStore()
-                console.log("The timer is" + fiveMinuteStore.fiveMinuteRunning)
                 return fiveMinuteStore.fiveMinuteRunning
             },
             startPomodoroTimer() {
@@ -51,39 +50,50 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     alert("Another timer is currently running. Please reset the existing timer to continue")
                 }
                 else {
-                    this.sittingStarted=true
+                    this.sittingStarted = true
                     this.determineCheckInIntervals()
                     this.startTimer()
                 }
             },
-            determineCheckInIntervals()
-            {
-                if(this.randomIntervals==true)
-                {
-                    console.log("Random interval selected")
-                    for(let i=0;i<this.numCheckIns;i++)
-                    {
-                        let seconds=this.minutesSet*60
-                        let secondsRange=seconds-30 //so that there won't be a check-in half a minute prior to the end of the session 
-                        let interval=(Math.floor(Math.random()*secondsRange))*1000
+            determineCheckInIntervals() {
+                this.intervals = []
+                if (this.randomIntervals == true) {
+                    for (let i = 0; i < this.numCheckIns; i++) {
+                        let seconds = this.minutesSet * 60
+                        let secondsRange = seconds - 30 //so that there won't be a check-in half a minute prior to the end of the session 
+                        let interval = (Math.floor(Math.random() * secondsRange)) * 1000
                         this.intervals.push(interval)
                     }
-                    this.intervals=this.intervals.sort((a,b)=>a-b).reverse()
+                    this.intervals = this.intervals.sort((a, b) => a - b)
                 }
-                else if(this.randomIntervals==false)
-                {
-                    console.log("Regular interval selected")
-                    let seconds=this.minutesSet*60
-                    let i=1
-                    let interval=(seconds/(this.numCheckIns+1))*1000
-                    while(i<this.numCheckIns+1)
-                    {
-                        this.intervals.push(interval*i)
+                else if (this.randomIntervals == false) {
+                    let seconds = this.minutesSet * 60
+                    let i = 1
+                    let interval = (seconds / (this.numCheckIns + 1)) * 1000
+                    while (i < this.numCheckIns + 1) {
+                        this.intervals.push(interval * i)
                         i++
                     }
-                    this.intervals=this.intervals.reverse()
+                    this.intervals = this.intervals.reverse()
                 }
-                console.log(this.intervals)
+            },
+            async getCsrfCookie() {
+                let csrfCookie = await cookieStore.get('csrftoken')
+                console.log(csrfCookie.value.length)
+                return csrfCookie.value
+            },
+            async updateMinutesSpent() {
+                let response = await fetch("http://localhost:8000/user_time_spent/",
+                    {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: { 'X-CSRFToken': await this.getCsrfCookie() },
+                        body: JSON.stringify({ 'minutes_spent': this.minutesSet })
+                    })
+                let created = await response.json()
+                if (created.created != true) {
+                    alert("An error occurred.")
+                }
             },
             startTimer() {
                 if (this.paused == true) {
@@ -106,8 +116,8 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         this.timerInterval = setInterval(() => { this.updateTimer() }, 100)
                     }
                     else {
-                        this.determineCheckInIntervals()
                         this.startTime = Date.now()
+                        this.determineCheckInIntervals()
                         this.endTime = this.startTime + (this.minutesSet * 60000)
                         this.running = true
                         this.timerInterval = setInterval(() => { this.updateTimer() }, 100)
@@ -116,6 +126,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
             },
             updateTimer() {
                 if (this.endTime - Date.now() <= 0) {
+                    this.updateMinutesSpent()
                     this.stopTimer()
                     if (this.timerAlarmSound == 'timer1') {
                         let sound = new Howl({ src: [timer1] })
@@ -130,7 +141,6 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         sound.play()
                     }
                     if (this.shortBreak == true || this.longBreak == true) {
-                        this.determineCheckInIntervals()
                         this.minutes = this.minutesSet
                         this.seconds = 0
                         if (this.shortBreak == true) {
@@ -157,11 +167,11 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         }
                     }
                     else {
-                        this.showCheckIn=false
+                        this.showCheckIn = false
                         //display cool congratulations animation
-                        this.showSelfReflectionModal=true
+                        this.showSelfReflectionModal = true
                         this.openSelfReflectionModal()
-                        this.sittingStarted=false
+                        this.sittingStarted = false
                         this.minutes = this.minutesSet
                         this.seconds = 0
                         this.currentSession = 1
@@ -170,39 +180,49 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     }
                 }
                 else {
-                    if((this.intervals.at(0)+this.startTime) - Date.now() <=0)
-                    {
-                        this.checkInStartTime=Date.now()
-                        this.checkInEndTime=Date.now()+20000
-                        console.log("Currently triggering the check in command")
-                        this.showCheckIn=true
+                    if (this.intervals.length > 0 && (this.intervals.at(0) + this.startTime) - Date.now() <= 0) {
+                        if (this.checkInSound) {
+                            if (this.timerAlarmSound == 'timer1') {
+                                let sound = new Howl({ src: [timer1] })
+                                sound.play()
+                            }
+                            else if (this.timerAlarmSound == 'timer2') {
+                                let sound = new Howl({ src: [timer2] })
+                                sound.play()
+                            }
+                            else if (this.timerAlarmSound == 'timer3') {
+                                let sound = new Howl({ src: [timer3] })
+                                sound.play()
+                            }
+                        }
+                        this.checkInStartTime = Date.now()
+                        this.checkInEndTime = Date.now() + 20000
+                        this.showCheckIn = true
                         this.intervals.shift()
                     }
-                    if(this.showCheckIn && this.checkInEndTime-Date.now()<=0)
-                    {
-                        this.showCheckIn=false
+                    if (this.showCheckIn && this.checkInEndTime - Date.now() <= 0) {
+                        this.showCheckIn = false
+                        this.percentageProgressCheckIn = 100
                     }
-                    else if(this.showCheckIn)
-                    {
+                    else if (this.showCheckIn) {
                         //updating the progress bar
                         this.updateProgressBar()
                     }
-                    console.log(Date.now())
-                    console.log("Check-in percentage progress"+this.percentageProgressCheckIn)
-                    console.log(this.checkInEndTime)
                     this.minutes = Math.trunc(((this.endTime - Date.now()) / 60000))
                     this.seconds = Math.trunc(((this.endTime - Date.now()) % 60000) / 1000)
                 }
             },
-            openSelfReflectionModal()
-            {
-                const selfReflectionModal=Modal.getOrCreateInstance(document.getElementById('selfReflectionModal'))
+            openSelfReflectionModal() {
+                const selfReflectionModal = Modal.getOrCreateInstance(document.getElementById('selfReflectionModal'))
                 selfReflectionModal.show()
             },
-            updateProgressBar()
-            {
-                this.millisecondsLeftCheckIn=this.checkInEndTime-Date.now()
-                this.percentageProgressCheckIn=(this.millisecondsLeftCheckIn /20000)*100
+            updateProgressBar() {
+                if (this.showCheckIn == true) {
+                    this.millisecondsLeftCheckIn = this.checkInEndTime - Date.now()
+                    if (((this.millisecondsLeftCheckIn / 20000) * 100) >= 0 && (this.millisecondsLeftCheckIn / 20000) * 100 <= 100) {
+                        this.percentageProgressCheckIn = (this.millisecondsLeftCheckIn / 20000) * 100
+                    }
+                }
             },
             stopTimer() {
                 this.running = false
@@ -216,7 +236,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
             },
             resetTimer() {
                 if (this.running || this.paused) {
-                    let reset = confirm("Resetting the timer will reset the whole pomodoro sitting back to session 1 (not just this session!) The time you have worked for so far in the session will be saved. Are you sure?")
+                    let reset = confirm("Resetting the timer will reset the whole pomodoro sitting back to session 1 (not just this session!) The time you have worked for so far in the session will not be saved. Are you sure?")
                     if (reset == true) {
                         this.stopTimer()
                         this.minutes = this.minutesSet
@@ -237,31 +257,27 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     this.shortBreak = false
                     this.longBreak = false
                 }
-                this.intervals=[]
-                this.tasksForCurrentSession=[]
-                this.sittingStarted=false
+                this.intervals = []
+                this.tasksForCurrentSession = []
+                this.sittingStarted = false
             },
         },
         getters:
         {
             millisecondsLeft: (state) => ((state.minutes * 60) + (state.seconds)) * 1000,
-            millisecondsGone(state)
-            {
-                if(this.longBreak)
-                {
+            millisecondsGone(state) {
+                if (this.longBreak) {
                     return state.longBreakMinutesSet * 60000 - state.millisecondsLeft
                 }
-                else if(this.shortBreak)
-                {
+                else if (this.shortBreak) {
                     return state.shortBreakMinutesSet * 60000 - state.millisecondsLeft
                 }
-                else
-                {
+                else {
                     return state.minutesSet * 60000 - state.millisecondsLeft
                 }
             },
             percentageProgress: (state) => (state.millisecondsGone / (state.minutesSet * 60000)) * 100,
-            shortBreakPercentageProgress:(state)=>(state.millisecondsGone/(state.shortBreakMinutesSet*60000)) *100,
-            longBreakPercentageProgress:(state)=>(state.millisecondsGone/(state.longBreakMinutesSet*60000)) *100
+            shortBreakPercentageProgress: (state) => (state.millisecondsGone / (state.shortBreakMinutesSet * 60000)) * 100,
+            longBreakPercentageProgress: (state) => (state.millisecondsGone / (state.longBreakMinutesSet * 60000)) * 100
         }
     })

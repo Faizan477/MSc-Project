@@ -83,3 +83,10 @@ class CompletedSession(models.Model):
     
     def to_dict(self):
         return {'id':self.id,'user':self.user.id,'completed':self.completed}
+    
+class UserTimeSpent(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    minutes_spent=models.IntegerField(default=0)
+    
+    def to_dict(self):
+            return {'id':self.id,'user':self.user.id,'minutes_spent':self.minutes_spent}

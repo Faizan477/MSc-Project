@@ -36,11 +36,11 @@ export default
             {{ fiveMinuteTimerStore.minutes.toString().padStart(2, '0') }}:{{ fiveMinuteTimerStore.seconds.toString().padStart(2, '0') }}
             {{ text }}
         </div>
-        <div class="d-flex justify-content-center">
-            <button v-if="fiveMinuteTimerStore.fiveMinuteRunning" class="btn btn-secondary" type="button"
-                @click="fiveMinuteTimerStore.pauseTimer">Pause</button>
-            <button v-else class="btn btn-secondary" type="button" @click="fiveMinuteTimerStore.startTimer">Start</button>
-            <button class="btn btn-secondary ms-3" type="button" @click="fiveMinuteTimerStore.resetTimer">Reset</button>
+        <div class="d-flex justify-content-center p-3" style="transform:scale(2.5)">
+            <button v-if="fiveMinuteTimerStore.fiveMinuteRunning" class="bi bi-pause-circle" type="button"
+                @click="fiveMinuteTimerStore.pauseTimer"></button>
+            <button v-else class="bi bi-play-circle" type="button" @click="fiveMinuteTimerStore.startTimer"></button>
+            <button class="bi bi-bootstrap-reboot ms-3 vh-50 vw-50" type="button" @click="fiveMinuteTimerStore.resetTimer"></button>
         </div>
     </div>
 </template>

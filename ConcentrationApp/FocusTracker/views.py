@@ -159,7 +159,7 @@ def overall_concentration_evaluation(request):
 
 @login_required
 def overall_concentration_evaluation_graph(request):
-    return JsonResponse([evaluation.to_dict() for evaluation in models.OverallConcentrationEvaluation.objects.filter(user=request.user).order_by('-timestamp')[:1]],safe=False)
+    return JsonResponse([evaluation.to_dict() for evaluation in models.OverallConcentrationEvaluation.objects.filter(user=request.user).order_by('-timestamp')],safe=False)
 
 @login_required
 def check_in_evaluation(request):
@@ -167,7 +167,7 @@ def check_in_evaluation(request):
         request_body=json.loads(request.body)
         models.CheckInEvaluation.objects.create(user=request.user,timestamp=request_body['timestamp'],focusing_value=request_body['focusing_value'])
         return JsonResponse({'created':True})
-    return JsonResponse([evaluation.to_dict() for evaluation in models.CheckInEvaluation.objects.filter(user=request.user).order_by('-timestamp')[:1]],safe=False)
+    return JsonResponse([evaluation.to_dict() for evaluation in models.CheckInEvaluation.objects.filter(user=request.user).order_by('-timestamp')],safe=False)
 
 @login_required
 def distractions_evaluation(request):
@@ -176,6 +176,10 @@ def distractions_evaluation(request):
         models.DistractionsEvaluation.objects.create(user=request.user,timestamp=request_body['timestamp'],zoning_out=request_body['zoning_out'],phone=request_body['phone'],starting_other_tasks=request_body['starting_other_tasks'],eating=request_body['eating'])
         return JsonResponse({'created':True})
     return JsonResponse([evaluation.to_dict() for evaluation in models.DistractionsEvaluation.objects.filter(user=request.user).order_by('-timestamp')[:1]],safe=False)
+
+@login_required
+def distractions_evaluation_graph(request):
+    return JsonResponse([evaluation.to_dict() for evaluation in models.DistractionsEvaluation.objects.filter(user=request.user).order_by('-timestamp')],safe=False)
 
 @login_required
 def last_task_progress(request):
@@ -199,13 +203,27 @@ def completed_sessions(request):
             return JsonResponse({'lastSessionExists':False})
         else:
             return JsonResponse({'lastSessionExists':True})
-        
+
+@login_required
+def user_time_spent(request):
+        if request.method=='PUT':
+            request_body=json.loads(request.body)
+            if(models.UserTimeSpent.objects.filter(user=request.user).count()==0):
+                models.UserTimeSpent.objects.create(user=request.user,minutes_spent=request_body['minutes_spent'])
+                return JsonResponse({'created':True})
+            else:
+                models.UserTimeSpent.objects.filter(user=request.user).update(minutes_spent=(models.UserTimeSpent.objects.get(user=request.user).minutes_spent+(request_body['minutes_spent'])))
+                return JsonResponse({'created':True})
+        elif request.method=='GET':
+            return JsonResponse([evaluation.to_dict() for evaluation in models.UserTimeSpent.objects.filter(user=request.user)],safe=False)
+
 def register(request):
     register_form=forms.RegisterForm()
     if request.method=='POST':
         register_form=forms.RegisterForm(request.POST)
         if(register_form.is_valid()):
             register_form.save()
+            #MAKE THE ADD QUOTE REQUESTS HERE 
             return redirect('http://localhost:5173/')
             
     return render(request,"register.html",{'registerForm':register_form})
