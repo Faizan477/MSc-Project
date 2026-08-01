@@ -49,7 +49,7 @@ export default
                 }
             },
             async submitCheckInReflection(value) {
-                const response = await fetch("http://localhost:8000/check_in_evaluation/",
+                const response = await fetch("/api/check_in_evaluation/",
                     {
                         method: 'POST',
                         credentials: 'include',

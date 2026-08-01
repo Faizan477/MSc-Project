@@ -104,7 +104,7 @@ export default
             async fetchTasksForToday() {
                 console.log("I am being called")
                 let date = encodeURIComponent(this.convertToDate(Date.now()))
-                let response = await fetch("http://localhost:8000/task_list/?date=" + date, { credentials: 'include' })
+                let response = await fetch("/api/task_list/?date=" + date, { credentials: 'include' })
                 let tasksForToday = await response.json()
                 this.tasksForToday = await tasksForToday.filter(this.filterIncompleteTasks)
                 await this.getLastEvaluation()
@@ -140,7 +140,7 @@ export default
                 this.refreshEvaluation = false //have to change to true than false again to ensure that the state property changes to trigger the watcher
             },
             async submitOverallConcentrationReflection() {
-                const response = await fetch("http://localhost:8000/overall_concentration_evaluation/",
+                const response = await fetch("/api/overall_concentration_evaluation/",
                     {
                         method: 'POST',
                         credentials: 'include',
@@ -165,7 +165,7 @@ export default
                         valuesToAdd[i] = 1
                     }
                 }
-                const response = await fetch("http://localhost:8000/distractions_evaluation/",
+                const response = await fetch("/api/distractions_evaluation/",
                     {
                         method: 'POST',
                         credentials: 'include',
@@ -194,7 +194,7 @@ export default
                 return 0
             },
             async submitLastTasksReflection() {
-                const response = await fetch("http://localhost:8000/last_task_progress/",
+                const response = await fetch("/api/last_task_progress/",
                     {
                         method: 'PUT',
                         credentials: 'include',
@@ -219,25 +219,25 @@ export default
                 }
             },
             async getLastTaskProgress() {
-                let response = await fetch("http://localhost:8000//last_task_progress/", { credentials: 'include' })
+                let response = await fetch("/api//last_task_progress/", { credentials: 'include' })
                 this.lastTaskProgress = await response.json()
             },
             async getLastOverallConcentrationRating() {
-                let response = await fetch("http://localhost:8000//overall_concentration_evaluation/", { credentials: 'include' })
+                let response = await fetch("/api//overall_concentration_evaluation/", { credentials: 'include' })
                 this.lastOverallEvaluation = await response.json()
             },
             async getLastDistractions() {
-                let response = await fetch("http://localhost:8000//distractions_evaluation/", { credentials: 'include' })
+                let response = await fetch("/api//distractions_evaluation/", { credentials: 'include' })
                 this.lastDistractions = await response.json()
                 console.log(this.lastDistractions)
             },
             async getLastSessionsExist() {
-                let response = await fetch("http://localhost:8000//completed_sessions/", { credentials: 'include' })
+                let response = await fetch("/api//completed_sessions/", { credentials: 'include' })
                 response = await response.json()
                 this.lastSessionExists = response.lastSessionExists
             },
             async markSessionsAsExisting() {
-                let response = await fetch("http://localhost:8000/completed_sessions/",
+                let response = await fetch("/api/completed_sessions/",
                     {
                         method: 'PUT',
                         credentials: 'include',

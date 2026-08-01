@@ -55,7 +55,7 @@
                 <p>Don't have an account yet?</p>
                 <button><a href="/register">Register</a></button>
             </div>
-            <form id="loginForm" method="POST",action="">
+            <form id="loginForm" method="POST",action="login_form">
                 {% csrf_token %}
                 {{loginForm.username.label}}
                 {{loginForm.username}}

@@ -15,11 +15,11 @@
             },
             async callToLogout()
             {
-                const response=await fetch("http://localhost:8000/logout_user/",
+                const response=await fetch("/api/logout_user/",
                 {method:'POST',credentials:'include',headers:{'X-CSRFToken': await this.getCsrfCookie()}})
                 if(response.ok)
                 {
-                    window.location.href='http://localhost:8000/'
+                    window.location.href='/'
                 }
             }
         }

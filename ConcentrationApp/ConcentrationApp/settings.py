@@ -23,10 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-n(43(%c!e@zw+ghj&%g1z7%vobh&^*+n-dbvy07vx0#8+uu4gq'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-CSRF_TRUSTED_ORIGINS=['http://localhost:5173']
+DEBUG = False
+CSRF_TRUSTED_ORIGINS=['https://faizan.danielgill.net']
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['faizan.danielgill.net', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -54,14 +54,14 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = ['http://localhost:5173']
-CSRF_TRUSTED_ORIGINS = ['http://localhost:5173']
+CORS_ALLOWED_ORIGINS = ['https://faizan.danielgill.net']
+CSRF_TRUSTED_ORIGINS = ['https://faizan.danielgill.net']
 ROOT_URLCONF = 'ConcentrationApp.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['/home/danielgill/MSc-Project/MSc Project/dist',],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -122,3 +122,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATICFILES_DIRS = [
+    '/home/danielgill/MSc-Project/MSc Project/dist/assets',
+]

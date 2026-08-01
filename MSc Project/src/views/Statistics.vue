@@ -34,19 +34,19 @@ export default
         methods:
         {
             async getMinutesSpent() {
-                let response = await fetch("http://localhost:8000//user_time_spent/", { credentials: 'include' })
+                let response = await fetch("/api//user_time_spent/", { credentials: 'include' })
                 this.minutesSpent = await response.json()
             },
             async getOverallConcentrationRatings() {
-                let response = await fetch("http://localhost:8000//overall_concentration_evaluation_graph/", { credentials: 'include' })
+                let response = await fetch("/api//overall_concentration_evaluation_graph/", { credentials: 'include' })
                 this.overallConcentrationRatings = await response.json()
             },
             async getDistractions() {
-                let response = await fetch("http://localhost:8000//distractions_evaluation_graph/", { credentials: 'include' })
+                let response = await fetch("/api//distractions_evaluation_graph/", { credentials: 'include' })
                 this.distractions = await response.json()
             },
             async getCheckInEvaluations() {
-                let response = await fetch("http://localhost:8000//check_in_evaluation/", { credentials: 'include' })
+                let response = await fetch("/api//check_in_evaluation/", { credentials: 'include' })
                 this.checkInEvaluations = await response.json()
             },
         }
