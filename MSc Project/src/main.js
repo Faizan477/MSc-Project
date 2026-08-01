@@ -17,12 +17,16 @@ const router=createRouter({history:createWebHistory(),
 })
 router.beforeEach(async(to,from)=>
     {
-        const response=await fetch("http://localhost:8000/check_if_authenticated/",{credentials:'include'})
+        if(window.location.pathname === '/login_user/') {
+		return true
+	}
+
+	const response=await fetch("/api/check_if_authenticated/",{credentials:'include'})
         let authenticated=await response.json()
         console.log(authenticated.authenticated)
         if(authenticated.authenticated==false)
         {
-            window.location.href='http://localhost:8000/login_user/'
+            window.location.href='/login_user/'
             return false
 
         }

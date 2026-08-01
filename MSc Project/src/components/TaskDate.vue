@@ -44,7 +44,7 @@ export default
                 return csrfCookie.value
             },
             async addTask() {
-                const response = await fetch("http://localhost:8000/task_list/",
+                const response = await fetch("/api/task_list/",
                     {
                         method: 'POST',
                         credentials: 'include',
@@ -63,7 +63,7 @@ export default
                 this.taskDescription = ''
             },
             async editTask(task) {
-                const response = await fetch("http://localhost:8000/tasks/" + task.id + "/",
+                const response = await fetch("/api/tasks/" + task.id + "/",
                     {
                         method: 'PUT',
                         credentials: 'include',
@@ -82,7 +82,7 @@ export default
                 this.rescheduleTo = ''
             },
             async deleteTask(id) {
-                const response = await fetch("http://localhost:8000/tasks/" + id + "/",
+                const response = await fetch("/api/tasks/" + id + "/",
                     {
                         method: 'DELETE',
                         credentials: 'include',
@@ -99,15 +99,15 @@ export default
             },
             async fetchTasks() {
                 let date = encodeURIComponent(this.selectedDate)
-                let response = await fetch("http://localhost:8000/task_list/?date=" + date, { credentials: 'include' })
+                let response = await fetch("/api/task_list/?date=" + date, { credentials: 'include' })
                 this.listOfTasks = await response.json()
 
-                let subtaskResponse = await fetch("http://localhost:8000/subtask_list/?date=" + date, { credentials: 'include' })
+                let subtaskResponse = await fetch("/api/subtask_list/?date=" + date, { credentials: 'include' })
                 //returns all subtasks for that specific date, regardless of task 
                 this.listOfSubtasks = await subtaskResponse.json()
             },
             async addSubtask(task, event) {
-                const response = await fetch("http://localhost:8000/subtask_list/",
+                const response = await fetch("/api/subtask_list/",
                     {
                         method: 'POST',
                         credentials: 'include',
@@ -126,7 +126,7 @@ export default
                 task.subtaskDescription = ''
             },
             async deleteSubtask(id) {
-                const response = await fetch("http://localhost:8000/subtasks/" + id + "/",
+                const response = await fetch("/api/subtasks/" + id + "/",
                     {
                         method: 'DELETE',
                         credentials: 'include',
@@ -142,7 +142,7 @@ export default
                 }
             },
             async editSubtask(subtask) {
-                const response = await fetch("http://localhost:8000/subtasks/" + subtask.id + "/",
+                const response = await fetch("/api/subtasks/" + subtask.id + "/",
                     {
                         method: 'PUT',
                         credentials: 'include',
@@ -168,7 +168,7 @@ export default
                 return filteredList
             },
             async completeTask(id) {
-                const response = await fetch("http://localhost:8000/task_completed/" + id + "/",
+                const response = await fetch("/api/task_completed/" + id + "/",
                     {
                         method: 'PUT',
                         credentials: 'include',
@@ -184,7 +184,7 @@ export default
                 }
             },
             async completeSubtask(id) {
-                const response = await fetch("http://localhost:8000/subtask_completed/" + id + "/",
+                const response = await fetch("/api/subtask_completed/" + id + "/",
                     {
                         method: 'PUT',
                         credentials: 'include',
