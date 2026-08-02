@@ -49,6 +49,7 @@ export default
                 }
             },
             async submitCheckInReflection(value) {
+                this.studyTimerStore.showCheckIn=false
                 const response = await fetch("/api/check_in_evaluation/",
                     {
                         method: 'POST',
