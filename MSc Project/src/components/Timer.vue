@@ -49,6 +49,7 @@ export default
                 }
             },
             async submitCheckInReflection(value) {
+                this.studyTimerStore.showCheckIn=false
                 const response = await fetch("http://localhost:8000/check_in_evaluation/",
                     {
                         method: 'POST',
@@ -101,6 +102,8 @@ export default
                 }
             },
             stopBreathingTimer() {
+                this.showInterventions=false
+                this.showPrompt=false
                 this.breathingExercise = false
                 this.breathingTimerRunning = false
                 clearInterval(this.breathingTimerInterval)
@@ -124,12 +127,12 @@ export default
         <div v-if="studyTimerStore.showCheckIn" class="alert alert-secondary w-100 alert-dismissible">
             <div class="d-flex justify-content-between">
                 <strong>Are you focusing?</strong>
-                <button type="button" class="btn btn-dark close" data-bs-dismiss="alert"
+                <button type="button" class="btn btn-dark close"
                     @click="submitCheckInReflection(1)">Yes </button>
                 <button type="submit" class="btn btn-dark close"
-                    @click="submitCheckInReflection(0.67)" data-bs-dismiss="alert">Sort of</button>
+                    @click="submitCheckInReflection(0.67)">Sort of</button>
                 <button type="submit" class="btn btn-dark close"
-                    @click="submitCheckInReflection(0.33)" data-bs-dismiss="alert">No</button>
+                    @click="submitCheckInReflection(0.33)">No</button>
             </div>
             <br>
             <div class="progress">

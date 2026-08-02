@@ -5,6 +5,11 @@ import { useFiveMinuteTimerStore } from './FiveMinuteTimerStore'
 import timer1 from '../assets/timerAlarmSounds/timer1.mp3'
 import timer2 from '../assets/timerAlarmSounds/timer2.mp3'
 import timer3 from '../assets/timerAlarmSounds/timer3.mp3'
+import CheckIn1 from '../assets/checkInSounds/CheckIn1.mp3'
+import CheckIn2 from '../assets/checkInSounds/CheckIn2.mp3'
+import CheckIn3 from '../assets/checkInSounds/CheckIn3.mp3'
+import CheckIn4 from '../assets/checkInSounds/CheckIn4.mp3'
+import CheckIn5 from '../assets/checkInSounds/CheckIn5.mp3'
 export const useStudyTimerStore = defineStore('studyTimer',
     {
         state: () => {
@@ -31,6 +36,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                 randomIntervals: false,
                 sittingStarted: false,
                 tasksForCurrentSession: [],
+                soundsForCurrentSession:[],
                 checkInSound: true,
                 intervals: [],
                 showCheckIn: false,
@@ -50,8 +56,11 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     alert("Another timer is currently running. Please reset the existing timer to continue")
                 }
                 else {
-                    this.sittingStarted = true
-                    this.determineCheckInIntervals()
+                    if(this.paused!=true)
+                    {
+                        this.sittingStarted=true
+                        this.determineCheckInIntervals()
+                    }
                     this.startTimer()
                 }
             },
@@ -74,7 +83,6 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         this.intervals.push(interval * i)
                         i++
                     }
-                    this.intervals = this.intervals.reverse()
                 }
             },
             async getCsrfCookie() {
@@ -167,9 +175,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                         }
                     }
                     else {
-                        this.showCheckIn = false
                         //display cool congratulations animation
-                        this.showSelfReflectionModal = true
                         this.openSelfReflectionModal()
                         this.sittingStarted = false
                         this.minutes = this.minutesSet
@@ -180,18 +186,32 @@ export const useStudyTimerStore = defineStore('studyTimer',
                     }
                 }
                 else {
-                    if (this.intervals.length > 0 && (this.intervals.at(0) + this.startTime) - Date.now() <= 0) {
-                        if (this.checkInSound) {
-                            if (this.timerAlarmSound == 'timer1') {
-                                let sound = new Howl({ src: [timer1] })
+                    if (this.intervals.length > 0 && this.shortBreak!=true && this.longBreak!=true && (this.intervals.at(0) + this.startTime) - Date.now() <= 0) {
+                        if (this.checkInSound && this.soundsForCurrentSession.length>0) {
+                            let randomNumber=Math.floor(Math.random()*(this.soundsForCurrentSession.length))
+                            if(randomNumber==0)
+                            {
+                                let sound = new Howl({ src: [CheckIn1] })
                                 sound.play()
                             }
-                            else if (this.timerAlarmSound == 'timer2') {
-                                let sound = new Howl({ src: [timer2] })
+                            else if(randomNumber==1)
+                            {
+                                let sound = new Howl({ src: [CheckIn2] })
                                 sound.play()
                             }
-                            else if (this.timerAlarmSound == 'timer3') {
-                                let sound = new Howl({ src: [timer3] })
+                            else if(randomNumber==2)
+                            {
+                                let sound = new Howl({ src: [CheckIn3] })
+                                sound.play()
+                            }
+                            else if(randomNumber==3)
+                            {
+                                let sound = new Howl({ src: [CheckIn4] })
+                                sound.play()
+                            }
+                            else if(randomNumber==4)
+                            {
+                                let sound = new Howl({ src: [CheckIn5] })
                                 sound.play()
                             }
                         }

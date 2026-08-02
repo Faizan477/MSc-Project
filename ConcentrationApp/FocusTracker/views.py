@@ -222,8 +222,12 @@ def register(request):
     if request.method=='POST':
         register_form=forms.RegisterForm(request.POST)
         if(register_form.is_valid()):
-            register_form.save()
-            #MAKE THE ADD QUOTE REQUESTS HERE 
+            new_user=register_form.save()
+            models.Quote.objects.create(user=new_user,text="The secret of getting ahead is getting started",author="Mark Twain")
+            models.Quote.objects.create(user=new_user,text="It always seems impossible until it's done",author="Nelson Mandela")
+            models.Quote.objects.create(user=new_user,text="You are capable of more than you know",author="")
+            models.Quote.objects.create(user=new_user,text="Progress over perfection",author="")
+            models.Quote.objects.create(user=new_user,text="Don't count the days, make the days count",author="Muhammad Ali")
             return redirect('http://localhost:5173/')
             
     return render(request,"register.html",{'registerForm':register_form})

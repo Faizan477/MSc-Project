@@ -4,10 +4,9 @@ import { mapStores } from 'pinia'
 export default
     {
         props: ['lastTaskProgress', 'lastOverallEvaluation', 'lastDistractions'],
-        methods:
+        async mounted() 
         {
-        },
-        mounted() {
+            await this.getLastEvaluation()
         }
     }
 </script>

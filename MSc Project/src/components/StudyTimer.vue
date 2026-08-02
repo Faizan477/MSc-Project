@@ -5,6 +5,11 @@ import { mapStores, mapWritableState } from 'pinia'
 import timer1 from '../assets/timerAlarmSounds/timer1.mp3'
 import timer2 from '../assets/timerAlarmSounds/timer2.mp3'
 import timer3 from '../assets/timerAlarmSounds/timer3.mp3'
+import CheckIn1 from '../assets/checkInSounds/CheckIn1.mp3'
+import CheckIn2 from '../assets/checkInSounds/CheckIn2.mp3'
+import CheckIn3 from '../assets/checkInSounds/CheckIn3.mp3'
+import CheckIn4 from '../assets/checkInSounds/CheckIn4.mp3'
+import CheckIn5 from '../assets/checkInSounds/CheckIn5.mp3'
 import Tasks from './Tasks.vue'
 import TaskDate from './TaskDate.vue';
 import LastEvaluation from './LastEvaluation.vue';
@@ -21,10 +26,9 @@ export default
                 tasksForToday: [],
                 tasksForCurrentSession: [],
                 checkInSound: true,
+                soundsForCurrentSession:[],
                 numCheckIns: 5,
                 randomIntervals: false,
-                showCheckIn: false,
-                refreshEvaluation: false,
                 overallConcentrationRating: '',
                 commonDistractionList: [{ id: 1, description: "Zoning out", checked: '' }, { id: 2, description: "Phone", checked: '' },
                 { id: 3, description: "Starting other tasks", checked: '' }, { id: 4, description: "Eating snacks", checked: '' }],
@@ -38,15 +42,8 @@ export default
             }
         },
         async mounted() {
-            console.log("Mounting now")
             await this.getLastEvaluation()
 
-        },
-        watch:
-        {
-            async refreshEvaluation() {
-                await this.getLastEvaluation()
-            }
         },
         components:
         {
@@ -54,8 +51,7 @@ export default
         },
         computed:
         {
-            ...mapStores(useStudyTimerStore),
-            ...mapWritableState(useStudyTimerStore, ['showSelfReflectionModal'])
+            ...mapStores(useStudyTimerStore)
         },
         methods:
         {
@@ -77,7 +73,9 @@ export default
                 this.studyTimerStore.randomIntervals = this.randomIntervals
                 this.studyTimerStore.tasksForCurrentSession = this.tasksForCurrentSession
                 this.studyTimerStore.checkInSound = this.checkInSound
+                this.studyTimerStore.soundsForCurrentSession=this.soundsForCurrentSession
                 this.studyTimerStore.numCheckIns = this.numCheckIns
+                this.soundsForCurrentSession=[]
                 this.studyTimerStore.startPomodoroTimer()
             },
             playTrialSound1() {
@@ -92,6 +90,31 @@ export default
                 let sound = new Howl({ src: [timer3] })
                 sound.play()
             },
+            playTrialCheckIn1()
+            {
+                let sound = new Howl({ src: [CheckIn1] })
+                sound.play()
+            },
+            playTrialCheckIn2()
+            {
+                let sound = new Howl({ src: [CheckIn2] })
+                sound.play()
+            },
+            playTrialCheckIn3()
+            {
+                let sound = new Howl({ src: [CheckIn3] })
+                sound.play()
+            },
+            playTrialCheckIn4()
+            {
+                let sound = new Howl({ src: [CheckIn4] })
+                sound.play()
+            },
+            playTrialCheckIn5()
+            {
+                let sound = new Howl({ src: [CheckIn5] })
+                sound.play()
+            },
             convertToDate(time_since_epoch) {
                 time_since_epoch = new Date(time_since_epoch)
                 return time_since_epoch.getFullYear() + "-" +
@@ -102,7 +125,6 @@ export default
                 return !(task.completed)
             },
             async fetchTasksForToday() {
-                console.log("I am being called")
                 let date = encodeURIComponent(this.convertToDate(Date.now()))
                 let response = await fetch("http://localhost:8000/task_list/?date=" + date, { credentials: 'include' })
                 let tasksForToday = await response.json()
@@ -127,9 +149,9 @@ export default
                 await this.submitOverallConcentrationReflection()
                 await this.submitDistractionsReflection()
                 await this.submitLastTasksReflection()
-                this.refreshEvaluation = true
                 this.tasksForToday = []
                 this.tasksForCurrentSession = []
+                this.soundsForCurrentSession=[]
                 this.overallConcentrationRating = ''
                 for (let i = 0; i < this.commonDistractionList.length; i++) {
                     this.commonDistractionList[i].checked = ''
@@ -137,7 +159,6 @@ export default
                 this.improvement = ''
                 await this.markSessionsAsExisting()
                 await this.getLastEvaluation()
-                this.refreshEvaluation = false //have to change to true than false again to ensure that the state property changes to trigger the watcher
             },
             async submitOverallConcentrationReflection() {
                 const response = await fetch("http://localhost:8000/overall_concentration_evaluation/",
@@ -259,8 +280,8 @@ export default
                 :style="{ width: studyTimerStore.shortBreakPercentageProgress + '%' }"
                 :aria-valuenow="studyTimerStore.millisecondsGone" :aria-valuemin="0"
                 :aria-valuemax="(studyTimerStore.shortBreakMinutesSet) * 60000"></div>
-            <div v-else-if="studyTimerStore.longBreak" class="progress-bar progress-bar-striped bg-info" role="progressbar"
-                :style="{ width: studyTimerStore.longBreakPercentageProgress + '%' }"
+            <div v-else-if="studyTimerStore.longBreak" class="progress-bar progress-bar-striped bg-info"
+                role="progressbar" :style="{ width: studyTimerStore.longBreakPercentageProgress + '%' }"
                 :aria-valuenow="studyTimerStore.millisecondsGone" :aria-valuemin="0"
                 :aria-valuemax="(studyTimerStore.longBreakMinutesSet) * 60000"></div>
             <div v-else class="progress-bar progress-bar-striped bg-success" role="progressbar"
@@ -270,7 +291,7 @@ export default
         </div>
         <br>
         <p v-if="!(studyTimerStore.longBreak || studyTimerStore.shortBreak)">Session {{ studyTimerStore.currentSession
-        }} of {{ studyTimerStore.numSessionsSet }} </p>
+            }} of {{ studyTimerStore.numSessionsSet }} </p>
         <p v-else-if="studyTimerStore.longBreak">Long break</p>
         <p v-else>Short break</p>
         <button v-show="!(studyTimerStore.running || studyTimerStore.paused)" class="bi bi-gear"
@@ -376,7 +397,7 @@ export default
                         <form @submit.prevent="clearTasksForToday()" class="d-flex flex-column align-items-center">
                             <div v-if="tasksForToday.length != 0">
                                 <p>Select the task(s) you plan to work on during these {{ studyTimerStore.numSessionsSet
-                                    }} sessions</p>
+                                }} sessions</p>
                                 <i v-if="preSelectionsMade">We have pre-selected suggested tasks based on your last
                                     self-reflection.</i>
                                 <div class="form-check" v-for="task in tasksForToday" :key="task.id">
@@ -417,6 +438,46 @@ export default
                                     v-model="checkInSound">
                                 <label class="form-check-label" for="auditoryCheckIn">Play a short sound at the start of
                                     each check-in</label>
+                            </div>
+                            <p v-if="checkInSound">One of the sounds you select from this list will be randomly chosen and played at each check-in.</p>
+                            <div v-if="checkInSound" class="row w-100">
+                                <div class="form-check col">
+                                    <input class="form-check-input" type="checkbox" value="checkIn1"
+                                        v-model="soundsForCurrentSession" id="chooseCheckIn1">
+                                </div>
+                                <div class="form-check col">
+                                    <input class="form-check-input" type="checkbox" value="checkIn2"
+                                        v-model="soundsForCurrentSession" id="chooseCheckIn2">
+                                </div>
+                                <div class="form-check col">
+                                    <input class="form-check-input" type="checkbox" value="checkIn3"
+                                        v-model="soundsForCurrentSession" id="chooseCheckIn3">
+                                </div>
+                                <div class="form-check col">
+                                    <input class="form-check-input" type="checkbox" value="checkIn4"
+                                        v-model="soundsForCurrentSession" id="chooseCheckIn4">
+                                </div>
+                                <div class="form-check col">
+                                    <input class="form-check-input" type="checkbox" value="checkIn5"
+                                        v-model="soundsForCurrentSession" id="chooseCheckIn5">
+                                </div>
+                            </div>
+                            <div v-if="checkInSound" class="row w-100">
+                                <div class="col">
+                                    <button class="bi bi-play-circle-fill me-5" @click="playTrialCheckIn1"></button>
+                                </div>
+                                <div class="col">
+                                    <button class="bi bi-play-circle-fill me-5" @click="playTrialCheckIn2"></button>
+                                </div>
+                                <div class="col">
+                                    <button class="bi bi-play-circle-fill" @click="playTrialCheckIn3"></button>
+                                </div>
+                                <div class="col">
+                                    <button class="bi bi-play-circle-fill" @click="playTrialCheckIn4"></button>
+                                </div>
+                                <div class="col">
+                                    <button class="bi bi-play-circle-fill" @click="playTrialCheckIn5"></button>
+                                </div>
                             </div>
                             <br>
                             <div class="d-flex justify-content-center">
