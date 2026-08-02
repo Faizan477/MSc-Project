@@ -228,7 +228,7 @@ def register(request):
             models.Quote.objects.create(user=new_user,text="You are capable of more than you know",author="")
             models.Quote.objects.create(user=new_user,text="Progress over perfection",author="")
             models.Quote.objects.create(user=new_user,text="Don't count the days, make the days count",author="Muhammad Ali")
-            return redirect('http://localhost:5173/')
+            return redirect('/dashboard')
             
     return render(request,"register.html",{'registerForm':register_form})
 
@@ -242,7 +242,7 @@ def login_user(request):
         if try_login_user is not None:
             login(request,try_login_user)
             print("Login successful")
-            return redirect('http://localhost:5173/')
+            return redirect('/dashboard')
         else:
             return render(request,"login.html",{'loginForm':login_form,'msg':"Incorrect username or password. Please try again."})
     return render(request,"login.html",{'loginForm':login_form})

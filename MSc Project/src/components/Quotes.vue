@@ -18,7 +18,7 @@ export default
                 return csrfCookie.value
             },
             async addQuote() {
-                const response = await fetch("http://localhost:8000/quote_list/",
+                const response = await fetch("/api/quote_list/",
                     {
                         method: 'POST',
                         credentials: 'include',
@@ -36,7 +36,7 @@ export default
                 this.quoteAuthor = ''
             },
             async deleteQuote(id) {
-                const response = await fetch("http://localhost:8000/quote/" + id + "/",
+                const response = await fetch("/api/quote/" + id + "/",
                     {
                         method: 'DELETE',
                         credentials: 'include',
@@ -53,7 +53,7 @@ export default
             async editQuote(id) {
                 console.log("The id that i have been given (edit quote) is "+id)
                 console.log("I am going to send the following"+this.editedText+""+this.editedAuthor)
-                const response = await fetch("http://localhost:8000/quote/" + id + "/",
+                const response = await fetch("/api/quote/" + id + "/",
                     {
                         method: 'PUT',
                         credentials: 'include',
@@ -72,7 +72,7 @@ export default
                 this.editedAuthor = ''
             },
             async fetchQuotes() {
-                let response = await fetch("http://localhost:8000/quote_list/", { credentials: 'include' })
+                let response = await fetch("/api/quote_list/", { credentials: 'include' })
                 this.listOfQuotes = await response.json()
             },
             fetchQuoteInfo(quote)

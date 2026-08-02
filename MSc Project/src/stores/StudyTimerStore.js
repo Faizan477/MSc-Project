@@ -91,7 +91,7 @@ export const useStudyTimerStore = defineStore('studyTimer',
                 return csrfCookie.value
             },
             async updateMinutesSpent() {
-                let response = await fetch("http://localhost:8000/user_time_spent/",
+                let response = await fetch("/api/user_time_spent/",
                     {
                         method: 'PUT',
                         credentials: 'include',
